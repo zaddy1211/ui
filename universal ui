@@ -1,3 +1,8 @@
+-- KZ Scripts Universal UI
+-- This is the Football Fusion 3 UI shell, extracted as a standalone library.
+-- It exposes both the native KZ control API and the older adapter API so
+-- every game module can add its own tabs without shipping another UI shell.
+
 local __KZ_UI_ENV = (getgenv and getgenv()) or _G
 local __KZ_UI_OPTIONS = (__KZ_UI_ENV and __KZ_UI_ENV.__KZ_UI_OPTIONS) or {}
 if __KZ_UI_ENV then __KZ_UI_ENV.__KZ_UI_OPTIONS = nil end
@@ -2522,13 +2527,17 @@ local __KZ_IconAliases = {
     layers = ICONS.Physics, settings = ICONS.Settings, defense = ICONS.Defense,
     speed = ICONS.Player, ball = ICONS.Catching, eye = ICONS.Visual,
     utility = ICONS.Misc, monitor = ICONS.Misc, atom = ICONS.Physics,
+    skull = ICONS.Trolling, user = ICONS.Player, hand = ICONS.Catching,
+    refresh = ICONS.Automatics, shield = ICONS.Defense,
 }
 
 local function __KZ_ResolveIcon(icon)
     if type(icon) ~= "string" then return ICONS.Misc end
-    if ICONS[icon] then return ICONS[icon] end
-    if __KZ_IconAliases[string.lower(icon)] then return __KZ_IconAliases[string.lower(icon)] end
+    if icon:match("^%d+$") then return "rbxassetid://" .. icon end
     if icon:match("^rbxasset") then return icon end
+    if ICONS[icon] then return ICONS[icon] end
+    local key = string.lower(icon:gsub("^lucide:", ""))
+    if __KZ_IconAliases[key] then return __KZ_IconAliases[key] end
     return ICONS.Misc
 end
 
@@ -2565,7 +2574,7 @@ local function __KZ_AddNav(name, icon, order)
     if navEntries[name] then return navEntries[name] end
     __KZ_TabCounter = __KZ_TabCounter + 1
     local button = New("TextButton", {
-        Parent = NavScroll, LayoutOrder = order or __KZ_TabCounter,
+        Parent = NavScroll, LayoutOrder = order or (__KZ_TabCounter + 1),
         Size = UDim2.new(1, 0, 0, 43), BackgroundColor3 = T.ElementBG,
         BackgroundTransparency = 1, Text = "", AutoButtonColor = false, ZIndex = 23,
     })
@@ -2705,6 +2714,17 @@ local function __KZ_CreateTab(options)
     if not page.__KZTab then page.__KZTab = __KZ_MakeTab(name,page) end
     __KZ_AddNav(name, options.Icon or ICONS.Misc, options.Order)
     return page.__KZTab
+end
+
+-- Game modules may provide their entire tab/icon manifest before fetching this
+-- file. The manifest is optional; tabs can also be added later dynamically.
+local __KZ_TabManifest = __KZ_UI_OPTIONS.Tabs
+if type(__KZ_TabManifest) == "table" then
+    for _, definition in ipairs(__KZ_TabManifest) do
+        if type(definition) == "table" and definition.Name then
+            __KZ_CreateTab(definition)
+        end
+    end
 end
 
 local __KZ_Window = setmetatable({Gui = __KZ_WindowGui, Screen = Screen}, {
