@@ -1,4 +1,3 @@
-
 local __KZ_UI_ENV = (getgenv and getgenv()) or _G
 local __KZ_UI_OPTIONS = (__KZ_UI_ENV and __KZ_UI_ENV.__KZ_UI_OPTIONS) or {}
 if __KZ_UI_ENV then __KZ_UI_ENV.__KZ_UI_OPTIONS = nil end
@@ -126,6 +125,40 @@ local ICONS = {
     Close = "rbxassetid://6031094678",
     Minimize = "rbxassetid://6031091004",
     Chevron = "rbxassetid://6031090990",
+}
+
+-- Icon registry only; game modules still own their tab manifests. New icon
+-- sets can be added here without adding any game-specific tabs to the UI.
+local IconSets = {
+    FootballFusion = {
+        QB = "rbxassetid://6034227067", Catching = "rbxassetid://7733955740",
+        Kicker = "rbxassetid://80008264726368", Player = "rbxassetid://7992557358",
+        Physics = "rbxassetid://80072619653916", Visual = "rbxassetid://16369898431",
+        World = "rbxassetid://7733954611", Defense = "rbxassetid://98159911363596",
+        Automatics = "rbxassetid://92629709486503", Trolling = "rbxassetid://76699723672654",
+        Misc = "rbxassetid://127904742940104", Settings = "rbxassetid://7734053495",
+    },
+    BladeBall = {
+        Parry = "rbxassetid://10734975692", Detections = "rbxassetid://10734977012",
+        Visuals = "rbxassetid://6523858394", Exploits = "rbxassetid://76699723672654",
+        Player = "rbxassetid://117259180607823", Exclusive = "rbxassetid://11026966410",
+        Settings = "rbxassetid://10734950309",
+    },
+    BasketballLegends = {
+        Shooting = "rbxassetid://13639846008", Defense = "rbxassetid://16734675996",
+        Movement = "rbxassetid://9657060536", ["Ball Control"] = "rbxassetid://7733955740",
+        Visuals = "rbxassetid://129042018463449", Utility = "rbxassetid://98159911363596",
+        ["Anti-Lag"] = "rbxassetid://127904742940104", Settings = "rbxassetid://7734053495",
+    },
+    DungeonHeroes = {
+        Farming = "rbxassetid://10734975692", Rewards = "rbxassetid://10734977012",
+        ["Pets & Chests"] = "rbxassetid://10709782497", Inventory = "rbxassetid://10723424505",
+        Settings = "rbxassetid://10734950309",
+    },
+    PracticalBasketball = {
+        ["Auto Green"] = "rbxassetid://10723406885", Player = "rbxassetid://7733765398",
+        Visual = "rbxassetid://7733964126", Settings = "rbxassetid://7734053495",
+    },
 }
 
 local Themes = {
@@ -2714,14 +2747,15 @@ end
 
 -- Game modules may provide their entire tab/icon manifest before fetching this
 -- file. The manifest is optional; tabs can also be added later dynamically.
-local __KZ_TabManifest = __KZ_UI_OPTIONS.Tabs
-if type(__KZ_TabManifest) == "table" then
-    for _, definition in ipairs(__KZ_TabManifest) do
+local function __KZ_RegisterTabs(definitions)
+    if type(definitions) ~= "table" then return end
+    for _, definition in ipairs(definitions) do
         if type(definition) == "table" and definition.Name then
             __KZ_CreateTab(definition)
         end
     end
 end
+__KZ_RegisterTabs(__KZ_UI_OPTIONS.Tabs)
 
 local __KZ_Window = setmetatable({Gui = __KZ_WindowGui, Screen = Screen}, {
     __index = function(object, key)
@@ -2876,7 +2910,7 @@ local __KZ_UI_API = {
     Version = "FootballFusionShell-Universal-1.0",
     Window = __KZ_Window, WindowGui = Window, Screen = Screen,
     Theme = T, Themes = Themes, ThemeName = function() return themeName end,
-    Icons = ICONS, pages = pages, navEntries = navEntries, AccentSyncPickers = AccentSyncPickers,
+    Icons = ICONS, IconSets = IconSets, pages = pages, navEntries = navEntries, AccentSyncPickers = AccentSyncPickers,
     ConfigManager = ConfigManager, KZAdapter = KZAdapter, LyraZen = LyraZen,
     New = New, Corner = Corner, Stroke = Stroke, Tween = Tween, Gradient = Gradient,
     BindTheme = BindTheme, Mix = Mix, themeBindings = themeBindings, connections = connections,
@@ -2897,6 +2931,7 @@ local __KZ_UI_API = {
     Keybind = Keybind, Colorpicker = Colorpicker, Divider = Divider, Toast = Toast,
     notify = notify, ApplyContentLayout = ApplyContentLayout, SetSidebar = SetSidebar,
     SelectPage = __KZ_SelectPage, SetOpen = __KZ_SetOpen, GetTargetScale = GetTargetScale,
+    RegisterTabs = __KZ_RegisterTabs,
     OnUnload = function(callback) if type(callback) == "function" then table.insert(__KZ_UnloadHooks, callback) end; return callback end,
     SetTheme = function(name) local control = ConfigManager.Flags["UI Theme"]; if control and control.Set then control.Set(name, true) end end,
     GetCursor = function() return currentCursor end,
