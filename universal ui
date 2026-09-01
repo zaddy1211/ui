@@ -513,8 +513,16 @@ New("UIPadding", {
 })
 New("UIListLayout", {Parent = NavScroll, Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder})
 
+-- Keep the animated selection behind the scrolling buttons and clipped to the
+-- navigation viewport. Scrolling should move the highlight with its real tab,
+-- never leave it sitting over a different one.
+local NavIndicatorLayer = New("Frame", {
+    Parent = Sidebar, Position = UDim2.fromOffset(0, 78), Size = UDim2.new(1, 0, 1, -150),
+    BackgroundTransparency = 1, BorderSizePixel = 0, ClipsDescendants = true, ZIndex = 22,
+})
+
 __KZ_QOL.NavSelectionGlow = New("Frame", {
-    Parent = Sidebar, Name = "AnimatedTabIndicator", Position = UDim2.fromOffset(10, 82),
+    Parent = NavIndicatorLayer, Name = "AnimatedTabIndicator", Position = UDim2.fromOffset(10, 4),
     Size = UDim2.fromOffset(SIDEBAR_COMPACT - 20, 43), BackgroundColor3 = T.Accent,
     BackgroundTransparency = 0.88, BorderSizePixel = 0, ZIndex = 22, Visible = false,
 })
@@ -3085,6 +3093,29 @@ local function __KZ_ResolveIcon(icon)
     return ICONS.Misc
 end
 
+local function __KZ_UpdateNavSelectionGlow(animate)
+    local selectedNav = navEntries[currentPage]
+    local glow = __KZ_QOL.NavSelectionGlow
+    if not selectedNav or not selectedNav.Button or not selectedNav.Button.Parent or not glow.Parent then
+        glow.Visible = false
+        return
+    end
+
+    local button = selectedNav.Button
+    local y = button.AbsolutePosition.Y - NavIndicatorLayer.AbsolutePosition.Y
+    glow.Visible = true
+    local goal = {
+        Position = UDim2.fromOffset(10, y),
+        Size = UDim2.new(1, -20, 0, 43),
+    }
+    if animate then
+        Tween(glow, 0.34, goal, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    else
+        glow.Position = goal.Position
+        glow.Size = goal.Size
+    end
+end
+
 local function __KZ_SelectPage(name)
     local targetPage = pages[name]
     if not targetPage then return end
@@ -3116,16 +3147,15 @@ local function __KZ_SelectPage(name)
     local selectedNav = navEntries[name]
     if selectedNav and selectedNav.Button then
         task.defer(function()
-            if not selectedNav.Button.Parent or not __KZ_QOL.NavSelectionGlow.Parent then return end
-            local y = selectedNav.Button.AbsolutePosition.Y - Sidebar.AbsolutePosition.Y
-            __KZ_QOL.NavSelectionGlow.Visible = true
-            Tween(__KZ_QOL.NavSelectionGlow, 0.34, {
-                Position = UDim2.fromOffset(10, y),
-                Size = UDim2.new(1, -20, 0, 43),
-            }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+            __KZ_UpdateNavSelectionGlow(true)
         end)
     end
 end
+
+
+NavScroll:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+    __KZ_UpdateNavSelectionGlow(false)
+end)
 
 local function __KZ_AddNav(name, icon, order)
     if navEntries[name] then return navEntries[name] end
