@@ -1,3 +1,5 @@
+-- Universal UI
+
 local __KZ_UI_ENV = (getgenv and getgenv()) or _G
 local __KZ_UI_OPTIONS = (__KZ_UI_ENV and __KZ_UI_ENV.__KZ_UI_OPTIONS) or {}
 if __KZ_UI_ENV then __KZ_UI_ENV.__KZ_UI_OPTIONS = nil end
@@ -146,7 +148,6 @@ local Themes = {
         Border = Color3.fromRGB(247, 178, 205), ControlBG = Color3.fromRGB(255, 220, 234),
     },
 
-    -- Black + red. Kept near-black instead of pure black so cards still separate cleanly.
     ["Redline"] = {
         MainBG = Color3.fromRGB(9, 9, 11), SidebarBG = Color3.fromRGB(13, 12, 15),
         TopbarBG = Color3.fromRGB(17, 14, 17), SectionBG = Color3.fromRGB(19, 16, 19),
@@ -156,7 +157,6 @@ local Themes = {
         Border = Color3.fromRGB(55, 35, 40), ControlBG = Color3.fromRGB(22, 17, 20),
     },
 
-    -- Deep navy with a bright electric-blue accent.
     ["Midnight"] = {
         MainBG = Color3.fromRGB(8, 12, 20), SidebarBG = Color3.fromRGB(11, 17, 28),
         TopbarBG = Color3.fromRGB(13, 21, 34), SectionBG = Color3.fromRGB(14, 23, 37),
@@ -166,7 +166,6 @@ local Themes = {
         Border = Color3.fromRGB(37, 55, 78), ControlBG = Color3.fromRGB(15, 25, 41),
     },
 
-    -- Dark graphite with emerald/neon-green highlights.
     ["Emerald"] = {
         MainBG = Color3.fromRGB(8, 13, 11), SidebarBG = Color3.fromRGB(11, 19, 16),
         TopbarBG = Color3.fromRGB(13, 24, 20), SectionBG = Color3.fromRGB(14, 26, 22),
@@ -176,7 +175,6 @@ local Themes = {
         Border = Color3.fromRGB(35, 62, 51), ControlBG = Color3.fromRGB(15, 29, 24),
     },
 
-    -- Frost: dark blue-gray surfaces with icy cyan highlights.
     ["Frost"] = {
         MainBG = Color3.fromRGB(9, 13, 18), SidebarBG = Color3.fromRGB(12, 18, 25),
         TopbarBG = Color3.fromRGB(15, 22, 30), SectionBG = Color3.fromRGB(16, 24, 33),
@@ -186,7 +184,6 @@ local Themes = {
         Border = Color3.fromRGB(39, 66, 80), ControlBG = Color3.fromRGB(17, 27, 37),
     },
 
-    -- Monochrome: high-contrast white/black theme with soft gray surfaces.
     ["Monochrome"] = {
         MainBG = Color3.fromRGB(245, 245, 245), SidebarBG = Color3.fromRGB(236, 236, 236),
         TopbarBG = Color3.fromRGB(250, 250, 250), SectionBG = Color3.fromRGB(240, 240, 240),
@@ -216,9 +213,7 @@ end
 local themeName = (Themes[__KZ_UI_OPTIONS.Theme] and __KZ_UI_OPTIONS.Theme) or "KZ Scripts"
 local T = {}
 for key, value in pairs(Themes[themeName]) do T[key] = value end
--- Publish the active accent palette so game-side visuals (QB beam, HUD
--- cards) can match the UI theme. Beam color follows the theme accent
--- until the user picks a custom color from the Beam Color picker.
+-- Share theme colors
 pcall(function()
     getgenv().__kzQBAccent = T.Accent
     getgenv().__kzQBAccent2 = T.Accent2
@@ -324,33 +319,20 @@ local function Tween(object, duration, properties, style, direction)
     return tween
 end
 
--- NEVER parent this UI into PlayerGui. Game LocalScripts can enumerate
--- PlayerGui freely, and FF3's client anti-cheat flags foreign GUIs the
--- instant they appear (instant ban on execute — before any feature is
--- even toggled). CoreGui is unreadable by game scripts, so the UI is
--- invisible there.
---
--- gethui() is NOT trustworthy for this purpose: on some executors
--- (notably Delta) it returns PlayerGui — a perfectly writable container
--- that FF3 CAN and DOES scan. So we validate gethui()'s result and only
--- accept a host that is genuinely hidden, then fall back to CoreGui.
--- We fail loudly when nothing hidden is available; we never expose the
--- UI in PlayerGui just because it happens to be writable.
+-- Keep UI out of PlayerGui
 local function IsPlayerGuiHost(host)
     if typeof(host) ~= "Instance" then return false end
     local ok, result = pcall(function()
         if host.ClassName == "PlayerGui" then return true end
         local pg = LocalPlayer and LocalPlayer:FindFirstChildOfClass("PlayerGui")
         if not pg then return false end
-        -- Anything nested inside PlayerGui is just as visible to game
-        -- scripts as PlayerGui itself.
+        -- Reject PlayerGui children
         return host == pg or host:IsDescendantOf(pg)
     end)
     return ok and result or false
 end
 
--- A host is acceptable only if it is BOTH hidden (not PlayerGui and not
--- inside PlayerGui) AND writable.
+-- Check hidden host
 local function HiddenHostUsable(host)
     if typeof(host) ~= "Instance" then return false end
     if IsPlayerGuiHost(host) then return false end
@@ -363,7 +345,7 @@ local function HiddenHostUsable(host)
 end
 
 local function ResolveHiddenHost()
-    -- 1) gethui() — validate it, don't trust it.
+    -- Try gethui
     local ok, gethuiHost = pcall(function()
         return gethui and gethui()
     end)
@@ -371,8 +353,7 @@ local function ResolveHiddenHost()
         return gethuiHost
     end
 
-    -- 2) CoreGui fallback. It is never PlayerGui, but it can still be
-    --    unwritable on some executors, so it gets the same probe.
+    -- Try CoreGui
     local coreGui = game:GetService("CoreGui")
     if HiddenHostUsable(coreGui) then
         return coreGui
@@ -393,10 +374,7 @@ if not parent then
     )
 end
 
--- Sweep stale copies from a previous execution. PlayerGui is checked
--- deliberately: if an older run (or an older UI build) left a copy
--- sitting in PlayerGui, it must be destroyed immediately — that is
--- exactly the artefact FF3's anti-cheat scans for.
+-- Remove old UI copies
 for _, location in ipairs({parent, LocalPlayer:FindFirstChild("PlayerGui")}) do
     if location then
         for _, staleName in ipairs({"KZScriptsUniversal", "KZCursor", "KZScriptsFootballFusion"}) do
@@ -427,60 +405,20 @@ Corner(Window, 18)
 local windowStroke = Stroke(Window, "Border", 0.12, 1.2)
 local Scale = New("UIScale", {Parent = Window, Scale = uiScaleFactor})
 
--- Background fade frame (ZIndex = 0) so the UI sits OVER the fade!
+-- Main background
 local WindowFade = New("Frame", {
     Parent = Window, Name = "WindowFade", Size = UDim2.fromScale(1, 1),
     BackgroundColor3 = T.MainBG, BorderSizePixel = 0, ZIndex = 0,
 })
-Gradient(WindowFade, {
-    function(t) return Mix(t.MainBG, t.Accent3, 0.08) end,
+local windowFadeGradient = Gradient(WindowFade, {
+    function(t) return Mix(t.MainBG, t.Accent3, 0.18) end,
     "MainBG",
-    function(t) return Mix(t.MainBG, t.Accent2, 0.08) end,
-}, 22)
+    function(t) return Mix(t.MainBG, t.Accent2, 0.2) end,
+}, 20)
+windowFadeGradient.Offset = Vector2.new(-0.18, -0.06)
 BindTheme(function()
     if WindowFade.Parent then WindowFade.BackgroundColor3 = T.MainBG end
 end)
-
-local AuroraLayer = New("Frame", {
-    Parent = Window, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
-    ClipsDescendants = true, ZIndex = 1,
-})
-local function AuroraBlob(position, size, colorKey, rotation)
-    local blob = New("Frame", {
-        Parent = AuroraLayer, AnchorPoint = Vector2.new(0.5, 0.5), Position = position,
-        Size = size, BackgroundColor3 = T[colorKey], BackgroundTransparency = 0.88,
-        BorderSizePixel = 0, ZIndex = 0,
-    })
-    Corner(blob, 999)
-    local fade = New("UIGradient", {
-        Parent = blob, Rotation = rotation or 0,
-        Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.28),
-            NumberSequenceKeypoint.new(0.48, 0.63),
-            NumberSequenceKeypoint.new(1, 1),
-        }),
-    })
-    BindTheme(function()
-        if blob.Parent then blob.BackgroundColor3 = T[colorKey] end
-    end)
-    return blob
-end
-local AuroraA = AuroraBlob(UDim2.fromScale(0.15, 0.2), UDim2.fromOffset(500, 330), "Accent", 28)
-local AuroraB = AuroraBlob(UDim2.fromScale(0.85, 0.15), UDim2.fromOffset(470, 300), "Accent2", 145)
-local AuroraC = AuroraBlob(UDim2.fromScale(0.75, 0.85), UDim2.fromOffset(610, 330), "Accent3", -20)
-
-local GlowOne = New("Frame", {
-    Parent = Window, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.17, 0.06),
-    Size = UDim2.fromOffset(420, 260), BackgroundColor3 = T.Accent,
-    BackgroundTransparency = 0.95, BorderSizePixel = 0, ZIndex = 0,
-})
-Corner(GlowOne, 200)
-local glowGradient = New("UIGradient", {
-    Parent = GlowOne,
-    Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.15), NumberSequenceKeypoint.new(1, 1),
-    }), Rotation = 35,
-})
 
 local SIDEBAR_COMPACT, SIDEBAR_OPEN = 64, 188
 local sidebarExpanded = false
@@ -488,10 +426,7 @@ local currentPage = "Home"
 local navEntries = {}
 local pages = {}
 
--- QOL systems: favorites, exact search jumping, active-toggle counters, and disable-all.
--- Keep all QOL state behind ONE local table. This UI is already close to Luau's
--- 200-local/register ceiling, so adding many long-lived locals can make the
--- whole chunk fail to compile.
+-- Shared UI state
 local __KZ_QOL = {
     ToggleRegistry = {},
 }
@@ -604,11 +539,7 @@ local ProfileStatus = New("TextLabel", {
     TextTransparency = 1, ZIndex = 24,
 })
 task.spawn(function()
-    -- rbxthumb:// is a plain string the engine resolves natively, so this
-    -- sidesteps GetUserThumbnailAsync entirely. That call returns a tuple
-    -- (content, isReady), and on current clients the first value can be a
-    -- Content object; assigning a Content to .Image throws
-    -- "Unable to assign property Image. ContentId expected, got Instance".
+    -- Roblox avatar thumbnail
     if not Avatar.Parent then return end
     local url = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(LocalPlayer.UserId) .. "&w=150&h=150"
     pcall(function() Avatar.Image = url end)
@@ -707,8 +638,7 @@ local OpenButton = New("ImageButton", {
     AutoButtonColor = false, ZIndex = 100,
 })
 New("UICorner", {Parent = OpenButton, CornerRadius = UDim.new(1, 0)})
--- Do not apply a UIGradient to the ImageButton: it tints the logo and its
--- lettering purple when the window is minimized.
+-- Keep minimized logo colors
 Stroke(OpenButton, "Accent2", 0.02, 1.6)
 New("UIPadding", {
     Parent = OpenButton, PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8),
@@ -1049,7 +979,7 @@ local ConfigManager = (function()
             return false, "invalid JSON"
         end
 
-        -- Also accept common wrapper formats people may use when sharing.
+        -- Accept wrapped configs
         if type(data.flags) == "table" then
             data = data.flags
         elseif type(data.Flags) == "table" then
@@ -1059,7 +989,7 @@ local ConfigManager = (function()
         local applied = 0
         local skipped = 0
 
-        -- Theme first so accent-synced controls update before the rest.
+        -- Apply theme first
         if data["UI Theme"] ~= nil and CM.Flags["UI Theme"] then
             local decodedTheme = decode(data["UI Theme"])
             if pcall(function() CM.Flags["UI Theme"].Set(decodedTheme, true) end) then
@@ -1397,7 +1327,7 @@ local function Slider(page, parentCard, label, min, max, value, suffix, onChange
         SetValue(min + ((max - min) * alpha), true)
     end
 
-    -- Click the displayed value, type a number, and press Enter/click away.
+    -- Type exact value
     valueText.Focused:Connect(function()
         editingValue = true
         valueText.Text = FormatNumber(current)
@@ -1955,7 +1885,7 @@ local function Colorpicker(page, parentCard, label, defaultColor, onChanged)
     Corner(preview, 6)
     Stroke(preview, "Border", 0.35)
 
-    -- Saturation / value gradient square (white -> hue left to right, transparent -> black top to bottom)
+    -- Color square
     local svBox = New("TextButton", {
         Parent = panel, Position = UDim2.fromOffset(SV_X, SV_Y), Size = UDim2.fromOffset(SV_W, SV_H),
         BackgroundColor3 = Color3.fromHSV(pendingHue, 1, 1), Text = "",
@@ -1991,7 +1921,7 @@ local function Colorpicker(page, parentCard, label, defaultColor, onChanged)
     Corner(svCursor, 6)
     New("UIStroke", {Parent = svCursor, Color = Color3.new(1, 1, 1), Thickness = 1.5})
 
-    -- Vertical rainbow hue strip with white marker
+    -- Hue strip
     local hueStrip = New("TextButton", {
         Parent = panel, Position = UDim2.fromOffset(HUE_X, SV_Y), Size = UDim2.fromOffset(HUE_W, SV_H),
         BackgroundColor3 = Color3.new(1, 1, 1), Text = "", AutoButtonColor = false, ZIndex = 401,
@@ -2008,7 +1938,7 @@ local function Colorpicker(page, parentCard, label, defaultColor, onChanged)
     })
     Corner(hueMarker, 2)
 
-    -- Rainbow toggle row
+    -- Rainbow toggle
     New("TextLabel", {
         Parent = panel, Position = UDim2.fromOffset(12, SV_Y + SV_H + 10), Size = UDim2.fromOffset(80, 18),
         BackgroundTransparency = 1, Text = "Rainbow", Font = Enum.Font.Gotham,
@@ -2030,7 +1960,7 @@ local function Colorpicker(page, parentCard, label, defaultColor, onChanged)
         Text = "", AutoButtonColor = false, ZIndex = 403,
     })
 
-    -- Cancel / Apply buttons
+    -- Color actions
     local cancelBtn = New("TextButton", {
         Parent = panel, Position = UDim2.fromOffset(12, PANEL_H - 28), Size = UDim2.fromOffset(108, 22),
         BackgroundColor3 = T.ControlBG, Text = "Cancel", Font = Enum.Font.GothamSemibold,
@@ -2135,23 +2065,28 @@ local function Colorpicker(page, parentCard, label, defaultColor, onChanged)
         if IsPress(input) then activeDrag = nil end
     end))
 
-    -- Rainbow mode: keep the swatch/panel animated and push the live color to the feature
+    -- Rainbow color loop
     local lastRainbowFire = 0
-    table.insert(connections, RunService.Heartbeat:Connect(function(dt)
-        if not rainbow then return end
-        rainbowClock = (rainbowClock + dt * 0.22) % 1
-        local c = LiveColor()
-        swatch.BackgroundColor3 = c
-        if panel.Visible then
-            preview.BackgroundColor3 = c
-            hueMarker.Position = UDim2.new(0, HUE_X + HUE_W / 2, 0, SV_Y + rainbowClock * SV_H)
-            svBox.BackgroundColor3 = Color3.fromHSV(rainbowClock, 1, 1)
+    task.spawn(function()
+        while not destroyed and swatch and swatch.Parent do
+            -- Smooth 30 FPS color update
+            local dt = task.wait(rainbow and (1 / 30) or 0.15)
+            if rainbow then
+                rainbowClock = (rainbowClock + dt * 0.22) % 1
+                local c = LiveColor()
+                swatch.BackgroundColor3 = c
+                if panel.Visible then
+                    preview.BackgroundColor3 = c
+                    hueMarker.Position = UDim2.new(0, HUE_X + HUE_W / 2, 0, SV_Y + rainbowClock * SV_H)
+                    svBox.BackgroundColor3 = Color3.fromHSV(rainbowClock, 1, 1)
+                end
+                if tick() - lastRainbowFire >= 0.1 then
+                    lastRainbowFire = tick()
+                    if onChanged then task.spawn(function() pcall(onChanged, c) end) end
+                end
+            end
         end
-        if tick() - lastRainbowFire >= 0.1 then
-            lastRainbowFire = tick()
-            if onChanged then task.spawn(function() pcall(onChanged, c) end) end
-        end
-    end))
+    end)
 
     applyBtn.MouseButton1Click:Connect(function()
         Commit(Color3.fromHSV(pendingHue, pendingSat, pendingVal), true)
@@ -2415,7 +2350,7 @@ end)
 
 local pageDefinitions = {}
 
--- ── Favorites -------------------------------------------------------------
+-- Favorites
 do
 local FavoriteHttp = game:GetService("HttpService")
 local FAVORITES_FILE = ConfigManager.Folder .. "/Favorites.json"
@@ -2547,7 +2482,7 @@ LoadFavoriteKeys()
 __KZ_QOL.RefreshFavorites()
 end
 
--- ── Active feature tracking ----------------------------------------------
+-- Active features
 __KZ_QOL.UpdateActiveUI = function()
     local total = 0
     local perPage = {}
@@ -2612,9 +2547,7 @@ end
 local Settings = CreatePage("Settings")
 local appearance = Section(Settings, "Appearance")
 
--- ── Hello Kitty theme decorations ─────────────────────────────
--- Decorative texture decals placed around the window; they only show
--- while the Hello Kitty theme is active.
+-- Hello Kitty decorations
 local HKDecor = {}
 local function HKDecal(parent, assetId, anchor, position, size, zindex, transparency)
     local img = New("ImageLabel", {
@@ -2626,10 +2559,10 @@ local function HKDecal(parent, assetId, anchor, position, size, zindex, transpar
     table.insert(HKDecor, img)
     return img
 end
--- Two little charms sitting left of the search box in the topbar
+-- Topbar charms
 HKDecal(Topbar, "11769216849", Vector2.new(1, 0.5), UDim2.new(1, -324, 0.5, 0), UDim2.fromOffset(26, 26), 13, 0.05)
 HKDecal(Topbar, "11744148931", Vector2.new(1, 0.5), UDim2.new(1, -354, 0.5, 0), UDim2.fromOffset(24, 24), 13, 0.1)
--- Soft corner watermark on the window (bottom-right)
+-- Corner decoration
 HKDecal(Window, "10973237327", Vector2.new(1, 1), UDim2.new(1, 5, 1, -10), UDim2.fromOffset(46, 46), 60, 0.3)
 BindTheme(function()
     local hkOn = themeName == "Hello Kitty"
@@ -2638,9 +2571,7 @@ BindTheme(function()
     end
 end)
 
--- Colorpickers registered here snap to the new theme accent whenever
--- the UI theme changes, so game visuals (trail, radius spheres, block
--- field, beam) re-theme along with the menu.
+-- Sync picker colors
 local AccentSyncPickers = {}
 
 ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"KZ Scripts", "Redline", "Midnight", "Emerald", "Frost", "Monochrome", "Hello Kitty"}, themeName, function(value)
@@ -2652,8 +2583,7 @@ ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"
         getgenv().__kzQBAccent = T.Accent
         getgenv().__kzQBAccent2 = T.Accent2
         getgenv().__kzQBAccent3 = T.Accent3
-        -- Theme switch re-themes everything: clear any custom beam color
-        -- so the beam follows the new accent too.
+        -- Reset custom accent
         getgenv().__kzQBBeamCustom = false
         getgenv().__kzQBBeamColor = T.Accent
         getgenv().__kzQBCardDecals = (selectedTheme == "Hello Kitty") and { "rbxassetid://11769216849", "rbxassetid://10973237327" } or nil
@@ -2662,8 +2592,7 @@ ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"
             label = Color3.fromRGB(179, 110, 140), value = Color3.fromRGB(97, 42, 68),
         } or nil
     end)
-    -- Snap all registered visual colorpickers to the new accent so
-    -- trails, radius spheres, block fields etc. match the theme.
+    -- Update picker accents
     for _, p in ipairs(AccentSyncPickers) do
         pcall(function() p:Set(T.Accent) end)
     end
@@ -2673,10 +2602,7 @@ ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"
     Toast("Theme changed", selectedTheme .. " palette applied.")
 end))
 
--- ── Cursor changer ────────────────────────────────────────────
--- Two options: Default or Hello Kitty (12030244889). Mouse.Icon
--- always renders huge, so instead we hide the system cursor and
--- draw a small image that follows the mouse every frame.
+-- Custom cursor
 local CursorOptions = {"Default", "Hello Kitty"}
 local CURSOR_IMAGE = "rbxassetid://12030244889"
 local CURSOR_SIZE = 24 -- pixels; tweak here if you want it bigger/smaller
@@ -2717,8 +2643,7 @@ local function ApplyCursor()
     end)
 end
 ConfigManager.Register("Cursor", Dropdown(Settings, appearance, "Cursor", CursorOptions, currentCursor, function(value)
-    -- Old configs may hold "Hello Kitty 1/2/3"; map anything HK to the
-    -- single Hello Kitty cursor.
+    -- Support old cursor names
     currentCursor = (tostring(value):find("Hello Kitty") and "Hello Kitty") or "Default"
     ApplyCursor()
 end))
@@ -2809,8 +2734,7 @@ Button(Settings, configs, "Delete Config", false, function()
     notify("Configs", ok and ("Deleted '" .. configName .. "'") or tostring(err), 3)
 end)
 
--- Shared config import. Paste another user's KZ JSON config and apply it.
--- This box is intentionally NOT registered as a config flag.
+-- Config import
 __KZ_QOL.ConfigImportSection = Section(Settings, "Import Config", "Paste a shared KZ JSON config and apply matching settings.")
 __KZ_QOL.ConfigImportBox = Textbox(
     Settings,
@@ -2881,13 +2805,7 @@ end
 
 
 
--- Universal tab/section bridge ---------------------------------------------
--- The visual shell above is the exact Football Fusion shell. The following
--- small bridge only translates tab/control calls; it does not draw another UI.
-
--- The original Football Fusion repaint pass lived after the feature loader.
--- Since this file is now loaded before feature modules, run that pass here
--- whenever the shared theme changes so every fixed shell surface changes too.
+-- Tab and control bridge
 __KZ_ApplyTheme = function()
     if destroyed then return end
     pcall(function()
@@ -2897,7 +2815,6 @@ __KZ_ApplyTheme = function()
         sideLine.BackgroundColor3 = T.Border
         Topbar.BackgroundColor3 = T.TopbarBG
         topLine.BackgroundColor3 = T.Border
-        GlowOne.BackgroundColor3 = T.Accent
         BrandLogoShell.BackgroundColor3 = T.ElementBG
         BrandTitle.TextColor3 = T.TextMain
         BrandSub.TextColor3 = T.Accent
@@ -3162,12 +3079,10 @@ function __KZ_WindowMethods:Unload()
 end
 function __KZ_WindowMethods:Destroy() return self:Unload() end
 
--- Settings uses this global after the shared UI has finished loading. It is
--- deliberately universal, so every game module's tracked connections are
--- disconnected through the same Window object.
+-- Shared unload function
 __KZ_UniversalUnload = function() return __KZ_Window:Unload() end
 
--- Jump to an exact control, center it in the page, and briefly highlight it.
+-- Jump to search result
 __KZ_QOL.JumpToSearchable = function(pageName, searchable)
     if not searchable or not searchable.Object then return end
     __KZ_SelectPage(pageName)
@@ -3194,7 +3109,7 @@ __KZ_QOL.JumpToSearchable = function(pageName, searchable)
     end)
 end
 
--- Search works across every dynamically-created tab.
+-- Search all tabs
 SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
     local query = string.lower(SearchInput.Text or "")
     for _, child in ipairs(SearchResults:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
@@ -3219,16 +3134,23 @@ SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
     if found > 0 then PositionSearchResults(); SearchResults.Visible = true; DropdownLayer.Visible = true end
 end)
 
--- Window controls and responsive behavior from the Football Fusion shell.
+-- Window controls
+local __KZ_AmbientTweens = {}
 local __KZ_WindowOpen = true
 local function __KZ_SetOpen(open)
     __KZ_WindowOpen = open == true
     if __KZ_WindowOpen then
         Window.Visible = true; Dim.Visible = true; OpenButton.Visible = false
+        for _, ambientTween in pairs(__KZ_AmbientTweens) do
+            pcall(function() ambientTween:Play() end)
+        end
         Window.GroupTransparency = 1
         Tween(Window, 0.28, {GroupTransparency = 0})
         Tween(Scale, 0.3, {Scale = GetTargetScale()})
     else
+        for _, ambientTween in pairs(__KZ_AmbientTweens) do
+            pcall(function() ambientTween:Pause() end)
+        end
         if activeDropdown then activeDropdown.Visible = false end
         if activeColorPopup then activeColorPopup.Visible = false end
         DropdownLayer.Visible = false
@@ -3272,17 +3194,410 @@ end
 if workspace.CurrentCamera then table.insert(connections, workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(__KZ_UpdateResponsiveScale)) end
 __KZ_UpdateResponsiveScale()
 
--- Home and Settings already exist in the extracted Football Fusion shell.
+-- Animated background
+local function __KZ_CreateAmbientLayer(host, baseZ, intensity, trackForWindow)
+    local layer = New("Frame", {
+        Parent = host, Name = "KZAmbient", Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1, BorderSizePixel = 0,
+        ClipsDescendants = true, ZIndex = baseZ,
+    })
+    local themed = {}
+
+    local function ThemeObject(object, property, key)
+        table.insert(themed, {Object = object, Property = property, Key = key})
+        object[property] = T[key]
+    end
+
+    BindTheme(function()
+        for _, binding in ipairs(themed) do
+            if binding.Object and binding.Object.Parent then
+                binding.Object[binding.Property] = T[binding.Key]
+            end
+        end
+    end)
+
+    local function Animate(object, duration, first, second)
+        task.spawn(function()
+            local forward = true
+            while not destroyed and object and object.Parent do
+                local target = forward and second or first
+                local motion = Tween(object, duration, target, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+                if not motion then break end
+                if trackForWindow then
+                    __KZ_AmbientTweens[object] = motion
+                    if not __KZ_WindowOpen then pcall(function() motion:Pause() end) end
+                end
+                motion.Completed:Wait()
+                forward = not forward
+            end
+            if trackForWindow then __KZ_AmbientTweens[object] = nil end
+        end)
+    end
+
+    if trackForWindow and windowFadeGradient and windowFadeGradient.Parent then
+        Animate(windowFadeGradient, 14, {Offset = Vector2.new(-0.18, -0.06)}, {
+            Offset = Vector2.new(0.18, 0.06),
+        })
+    end
+
+    -- Background dots
+    for row = 0, 5 do
+        for column = 0, 9 do
+            local dot = New("Frame", {
+                Parent = layer, AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.fromScale(0.045 + column * 0.105, 0.055 + row * 0.178),
+                Size = UDim2.fromOffset(2, 2), BackgroundTransparency = 1 - (0.12 * intensity),
+                BorderSizePixel = 0, ZIndex = baseZ,
+            })
+            Corner(dot, 999)
+            ThemeObject(dot, "BackgroundColor3", "Border")
+        end
+    end
+
+    local streakData = {
+        {Start = UDim2.fromScale(-0.26, 0.24), Finish = UDim2.fromScale(0.78, 0.04), Rotation = -17, Key = "Accent3", Time = 16},
+        {Start = UDim2.fromScale(-0.12, 0.86), Finish = UDim2.fromScale(0.76, 0.66), Rotation = -12, Key = "Accent2", Time = 19},
+    }
+    for _, data in ipairs(streakData) do
+        local streak = New("Frame", {
+            Parent = layer, AnchorPoint = Vector2.new(0.5, 0.5), Position = data.Start,
+            Size = UDim2.fromOffset(430, 3), Rotation = data.Rotation,
+            BackgroundTransparency = 1 - (0.09 * intensity), BorderSizePixel = 0,
+            ZIndex = baseZ,
+        })
+        ThemeObject(streak, "BackgroundColor3", data.Key)
+        New("UIGradient", {
+            Parent = streak,
+            Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 1),
+                NumberSequenceKeypoint.new(0.5, 0.18),
+                NumberSequenceKeypoint.new(1, 1),
+            }),
+        })
+        Animate(streak, data.Time, {Position = data.Start}, {Position = data.Finish})
+    end
+
+    local shapeData = {
+        {Kind = "Diamond", Start = UDim2.fromScale(0.08, 0.23), Finish = UDim2.fromScale(0.14, 0.16), Size = 18, Key = "Accent", Time = 15, Rotation = 45},
+        {Kind = "Ring", Start = UDim2.fromScale(0.79, 0.2), Finish = UDim2.fromScale(0.73, 0.28), Size = 22, Key = "Accent3", Time = 17, Rotation = 0},
+        {Kind = "Square", Start = UDim2.fromScale(0.84, 0.78), Finish = UDim2.fromScale(0.76, 0.7), Size = 13, Key = "Accent2", Time = 14, Rotation = 12},
+        {Kind = "Slash", Start = UDim2.fromScale(0.28, 0.82), Finish = UDim2.fromScale(0.36, 0.74), Size = 38, Key = "Accent", Time = 18, Rotation = -18},
+        {Kind = "Ring", Start = UDim2.fromScale(0.46, 0.12), Finish = UDim2.fromScale(0.52, 0.18), Size = 11, Key = "Accent2", Time = 16, Rotation = 0},
+        {Kind = "Diamond", Start = UDim2.fromScale(0.93, 0.42), Finish = UDim2.fromScale(0.87, 0.5), Size = 12, Key = "Accent", Time = 19, Rotation = 45},
+        {Kind = "Square", Start = UDim2.fromScale(0.58, 0.91), Finish = UDim2.fromScale(0.65, 0.84), Size = 9, Key = "Accent3", Time = 15, Rotation = 18},
+    }
+    for _, data in ipairs(shapeData) do
+        local isSlash = data.Kind == "Slash"
+        local shape = New("Frame", {
+            Parent = layer, AnchorPoint = Vector2.new(0.5, 0.5), Position = data.Start,
+            Size = isSlash and UDim2.fromOffset(data.Size, 2) or UDim2.fromOffset(data.Size, data.Size),
+            BackgroundTransparency = isSlash and (1 - 0.11 * intensity) or 1,
+            BorderSizePixel = 0, Rotation = data.Rotation, ZIndex = baseZ,
+        })
+        if isSlash then
+            ThemeObject(shape, "BackgroundColor3", data.Key)
+            New("UIGradient", {
+                Parent = shape,
+                Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1),
+                    NumberSequenceKeypoint.new(0.5, 0.1),
+                    NumberSequenceKeypoint.new(1, 1),
+                }),
+            })
+        else
+            Corner(shape, data.Kind == "Ring" and 999 or (data.Kind == "Square" and 3 or 5))
+            local shapeStroke = New("UIStroke", {
+                Parent = shape, Transparency = 1 - (0.2 * intensity),
+                Thickness = 1.1, ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+            })
+            ThemeObject(shapeStroke, "Color", data.Key)
+        end
+        Animate(shape, data.Time, {Position = data.Start, Rotation = data.Rotation}, {
+            Position = data.Finish, Rotation = data.Rotation + (isSlash and 7 or 24),
+        })
+    end
+
+    local particleData = {
+        {0.19, 0.72, 0.27, 0.62, 12}, {0.35, 0.18, 0.42, 0.28, 15},
+        {0.53, 0.82, 0.6, 0.7, 17}, {0.68, 0.34, 0.74, 0.25, 14},
+        {0.86, 0.52, 0.79, 0.61, 18}, {0.44, 0.56, 0.49, 0.46, 13},
+    }
+    local particleKeys = {"Accent", "Accent2", "Accent3"}
+    for index, data in ipairs(particleData) do
+        local startPosition = UDim2.fromScale(data[1], data[2])
+        local endPosition = UDim2.fromScale(data[3], data[4])
+        local particle = New("Frame", {
+            Parent = layer, AnchorPoint = Vector2.new(0.5, 0.5), Position = startPosition,
+            Size = UDim2.fromOffset(index % 2 == 0 and 3 or 4, index % 2 == 0 and 3 or 4),
+            BackgroundTransparency = 1 - (0.24 * intensity), BorderSizePixel = 0,
+            ZIndex = baseZ,
+        })
+        Corner(particle, 999)
+        ThemeObject(particle, "BackgroundColor3", particleKeys[((index - 1) % 3) + 1])
+        Animate(particle, data[5], {Position = startPosition}, {Position = endPosition})
+    end
+
+    return layer
+end
+
+__KZ_CreateAmbientLayer(Window, 2, 1.25, true)
+
+-- Default pages
 __KZ_AddNav("Home", ICONS.Home, 1)
 __KZ_AddNav("Settings", ICONS.Settings, 999)
 __KZ_ApplyTheme()
 __KZ_SelectPage("Home")
 Window.Visible = true
-Window.Active = true
-Window.GroupTransparency = 0
+Window.Active = false
+Window.GroupTransparency = 1
 Scale.Scale = GetTargetScale()
 
--- Legacy adapter names used by Blade Ball, Dungeon Heroes, and Basketball.
+-- Loading animation
+local function __KZ_PlayLoadAnimation()
+    if __KZ_UI_OPTIONS.LoadAnimation == false then
+        Window.Active = true
+        Window.GroupTransparency = 0
+        return
+    end
+
+    local targetScale = GetTargetScale()
+    Window.Visible = false
+    local Intro = New("CanvasGroup", {
+        Parent = Screen, Name = "KZLoadIntro", AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(900, 540),
+        BackgroundColor3 = T.MainBG, BorderSizePixel = 0, ClipsDescendants = true,
+        GroupTransparency = 1, ZIndex = 1000, Active = true,
+    })
+    Corner(Intro, 18)
+    local introStroke = Stroke(Intro, "Accent", 1, 1.4)
+    local introScale = New("UIScale", {Parent = Intro, Scale = targetScale * 0.72})
+
+    local introBackdrop = New("Frame", {
+        Parent = Intro, Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = T.MainBG, BorderSizePixel = 0, ZIndex = 1000,
+    })
+    local backdropGradient = Gradient(introBackdrop, {
+        function(t) return Mix(t.MainBG, t.Accent3, 0.18) end,
+        "MainBG",
+        function(t) return Mix(t.MainBG, t.Accent2, 0.2) end,
+    }, 20)
+    backdropGradient.Offset = Vector2.new(-0.18, -0.06)
+    __KZ_CreateAmbientLayer(Intro, 1001, 0.9, false)
+
+    -- UI reveal masks
+    local sidebarRevealMask = New("Frame", {
+        Parent = Window, Name = "SidebarRevealMask", Position = UDim2.fromOffset(0, 0),
+        Size = UDim2.new(0, SIDEBAR_COMPACT, 1, 0), BackgroundColor3 = T.SidebarBG,
+        BorderSizePixel = 0, ZIndex = 900,
+    })
+    local contentRevealMask = New("Frame", {
+        Parent = Window, Name = "ContentRevealMask", AnchorPoint = Vector2.new(1, 0),
+        Position = UDim2.fromScale(1, 0), Size = UDim2.new(1, -SIDEBAR_COMPACT, 1, 0),
+        BackgroundColor3 = T.MainBG, BorderSizePixel = 0, ZIndex = 900,
+    })
+
+    local dragSurface = New("TextButton", {
+        Parent = Intro, Name = "DragSurface", Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1, BorderSizePixel = 0, Text = "",
+        AutoButtonColor = false, Active = true, ZIndex = 1100,
+    })
+
+    -- Loader drag follows UI
+    local introDragging, introDragStart, introStartPosition, introDragInput = false, nil, nil, nil
+    dragSurface.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            introDragging = true
+            introDragStart = input.Position
+            introStartPosition = Intro.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then introDragging = false end
+            end)
+        end
+    end)
+    dragSurface.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            introDragInput = input
+        end
+    end)
+    local introMoveConnection = UserInputService.InputChanged:Connect(function(input)
+        if introDragging and introDragStart and introStartPosition and input == introDragInput then
+            local delta = input.Position - introDragStart
+            local nextPosition = UDim2.new(
+                introStartPosition.X.Scale, introStartPosition.X.Offset + delta.X,
+                introStartPosition.Y.Scale, introStartPosition.Y.Offset + delta.Y
+            )
+            Intro.Position = nextPosition
+            Window.Position = nextPosition
+        end
+    end)
+
+    local logoMark = New("Frame", {
+        Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.43), Size = UDim2.fromOffset(230, 104),
+        BackgroundTransparency = 1, ZIndex = 1002,
+    })
+    local logoMarkScale = New("UIScale", {Parent = logoMark, Scale = 0.86})
+    local logoK = New("TextLabel", {
+        Parent = logoMark, Position = UDim2.fromOffset(12, 0), Size = UDim2.fromOffset(92, 94),
+        BackgroundTransparency = 1, Text = "K", Font = Enum.Font.GothamBlack,
+        TextSize = 76, TextColor3 = T.TextMain, TextTransparency = 1,
+        TextStrokeColor3 = T.Accent, TextStrokeTransparency = 1, Rotation = -2, ZIndex = 1002,
+    })
+    local logoZ = New("TextLabel", {
+        Parent = logoMark, Position = UDim2.fromOffset(126, 0), Size = UDim2.fromOffset(92, 94),
+        BackgroundTransparency = 1, Text = "Z", Font = Enum.Font.GothamBlack,
+        TextSize = 76, TextColor3 = T.TextMain, TextTransparency = 1,
+        TextStrokeColor3 = T.Accent2, TextStrokeTransparency = 1, Rotation = 2, ZIndex = 1002,
+    })
+    Gradient(logoK, {"TextMain", "Accent"}, 10)
+    Gradient(logoZ, {"Accent2", "TextMain"}, 10)
+    local logoSlash = New("Frame", {
+        Parent = logoMark, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.44), Size = UDim2.fromOffset(4, 72),
+        BackgroundColor3 = T.Accent, BackgroundTransparency = 1,
+        BorderSizePixel = 0, Rotation = 16, ZIndex = 1003,
+    })
+    Corner(logoSlash, 999)
+    Gradient(logoSlash, {"Accent3", "Accent", "Accent2"}, 90)
+    local logoUnderline = New("Frame", {
+        Parent = logoMark, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.94), Size = UDim2.fromOffset(0, 2),
+        BackgroundColor3 = T.Accent, BackgroundTransparency = 0.08,
+        BorderSizePixel = 0, ZIndex = 1002,
+    })
+    Corner(logoUnderline, 999)
+    Gradient(logoUnderline, {"Accent3", "Accent", "Accent2"}, 0)
+
+    local subtitle = New("TextLabel", {
+        Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.555), Size = UDim2.fromOffset(280, 24),
+        BackgroundTransparency = 1, Text = "S C R I P T S", Font = Enum.Font.GothamMedium,
+        TextSize = 11, TextColor3 = T.TextSub, TextTransparency = 1, ZIndex = 1002,
+    })
+
+    local statusLabel = New("TextLabel", {
+        Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.61), Size = UDim2.fromOffset(260, 18),
+        BackgroundTransparency = 1, Text = "INITIALIZING", Font = Enum.Font.GothamMedium,
+        TextSize = 9, TextColor3 = T.Accent, TextTransparency = 1, ZIndex = 1002,
+    })
+
+    local loadingLabel = New("TextLabel", {
+        Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.655), Size = UDim2.fromOffset(220, 20),
+        BackgroundTransparency = 1, Text = "LOADING  0%", Font = Enum.Font.GothamSemibold,
+        TextSize = 11, TextColor3 = T.TextSub, TextTransparency = 1, ZIndex = 1002,
+    })
+
+    local progressTrack = New("Frame", {
+        Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.7), Size = UDim2.fromOffset(230, 5),
+        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.25,
+        BorderSizePixel = 0, ClipsDescendants = true, ZIndex = 1002,
+    })
+    Corner(progressTrack, 999)
+    local progressFill = New("Frame", {
+        Parent = progressTrack, Size = UDim2.fromScale(0, 1),
+        BackgroundColor3 = T.Accent, BorderSizePixel = 0, ZIndex = 1003,
+    })
+    Corner(progressFill, 999)
+    Gradient(progressFill, {"Accent3", "Accent", "Accent2"}, 0)
+    local progressGlow = New("Frame", {
+        Parent = progressFill, AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.fromOffset(46, 5),
+        BackgroundColor3 = T.TextMain, BorderSizePixel = 0, ZIndex = 1004,
+    })
+    New("UIGradient", {
+        Parent = progressGlow,
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(0.68, 0.58),
+            NumberSequenceKeypoint.new(1, 0.04),
+        }),
+    })
+
+    local loadingProgress = New("NumberValue", {Parent = Intro, Value = 0})
+    loadingProgress.Changed:Connect(function(value)
+        if loadingLabel and loadingLabel.Parent then
+            loadingLabel.Text = string.format("LOADING  %d%%", math.clamp(math.floor(value + 0.5), 0, 100))
+        end
+    end)
+
+    task.spawn(function()
+        Tween(Intro, 0.72, {GroupTransparency = 0}, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        Tween(introScale, 1.05, {Scale = targetScale}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(introStroke, 0.9, {Transparency = 0.16}, Enum.EasingStyle.Sine)
+        Tween(backdropGradient, 4.2, {Offset = Vector2.new(0.18, 0.06)}, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        task.wait(0.35)
+        Tween(logoK, 0.62, {TextTransparency = 0, TextStrokeTransparency = 0.82}, Enum.EasingStyle.Sine)
+        Tween(logoZ, 0.72, {TextTransparency = 0, TextStrokeTransparency = 0.82}, Enum.EasingStyle.Sine)
+        Tween(logoSlash, 0.58, {BackgroundTransparency = 0.04}, Enum.EasingStyle.Sine)
+        Tween(logoMarkScale, 0.82, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(logoUnderline, 0.8, {Size = UDim2.fromOffset(124, 2)}, Enum.EasingStyle.Quint)
+        task.wait(0.22)
+        Tween(subtitle, 0.55, {TextTransparency = 0.12}, Enum.EasingStyle.Sine)
+        Tween(statusLabel, 0.45, {TextTransparency = 0.16}, Enum.EasingStyle.Sine)
+        Tween(loadingLabel, 0.55, {TextTransparency = 0.08}, Enum.EasingStyle.Sine)
+        Tween(progressFill, 2.5, {Size = UDim2.fromScale(1, 1)}, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        Tween(loadingProgress, 2.5, {Value = 100}, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        task.delay(0.7, function()
+            if statusLabel and statusLabel.Parent then statusLabel.Text = "LOADING INTERFACE" end
+        end)
+        task.delay(1.55, function()
+            if statusLabel and statusLabel.Parent then statusLabel.Text = "FINALIZING" end
+        end)
+        task.wait(2.65)
+
+        loadingLabel.Text = "READY"
+        loadingLabel.TextColor3 = T.Accent
+        statusLabel.Text = "ALL SYSTEMS READY"
+        Tween(logoMark, 0.58, {
+            Position = UDim2.fromScale(0.5, 0.39),
+        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(logoMarkScale, 0.58, {Scale = 0.91}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(progressGlow, 0.32, {BackgroundTransparency = 1}, Enum.EasingStyle.Sine)
+        task.wait(0.58)
+
+        Window.Position = Intro.Position
+        Window.Visible = true
+        Window.Active = true
+        Scale.Scale = targetScale * 0.985
+        Tween(Window, 0.34, {GroupTransparency = 0}, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        Tween(Scale, 0.9, {Scale = targetScale}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        task.wait(0.1)
+        Tween(sidebarRevealMask, 0.58, {
+            Position = UDim2.fromOffset(-SIDEBAR_COMPACT - 8, 0), BackgroundTransparency = 1,
+        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        task.wait(0.12)
+        Tween(contentRevealMask, 0.68, {
+            Size = UDim2.new(0, 0, 1, 0), BackgroundTransparency = 1,
+        }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(logoMark, 0.52, {
+            Position = UDim2.fromScale(0.5, 0.35),
+        }, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        Tween(logoMarkScale, 0.52, {Scale = 0.8}, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        Tween(logoK, 0.44, {TextTransparency = 1, TextStrokeTransparency = 1}, Enum.EasingStyle.Sine)
+        Tween(logoZ, 0.44, {TextTransparency = 1, TextStrokeTransparency = 1}, Enum.EasingStyle.Sine)
+        Tween(logoSlash, 0.38, {BackgroundTransparency = 1}, Enum.EasingStyle.Sine)
+        Tween(logoUnderline, 0.38, {BackgroundTransparency = 1, Size = UDim2.fromOffset(36, 2)}, Enum.EasingStyle.Sine)
+        Tween(subtitle, 0.42, {TextTransparency = 1}, Enum.EasingStyle.Sine)
+        Tween(statusLabel, 0.38, {TextTransparency = 1}, Enum.EasingStyle.Sine)
+        Tween(loadingLabel, 0.38, {TextTransparency = 1}, Enum.EasingStyle.Sine)
+        Tween(Intro, 0.82, {GroupTransparency = 1}, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        Tween(introScale, 0.82, {Scale = targetScale * 1.018}, Enum.EasingStyle.Quint)
+        task.wait(0.85)
+        if introMoveConnection then introMoveConnection:Disconnect() end
+        if sidebarRevealMask and sidebarRevealMask.Parent then sidebarRevealMask:Destroy() end
+        if contentRevealMask and contentRevealMask.Parent then contentRevealMask:Destroy() end
+        if Intro and Intro.Parent then Intro:Destroy() end
+    end)
+end
+
+__KZ_PlayLoadAnimation()
+
+-- Legacy support
 local KZAdapter = {}
 KZAdapter.Version = "Universal Football Fusion UI"
 KZAdapter.Theme = {Hightlight = T.Accent, Accent = T.Accent}
@@ -3336,7 +3651,7 @@ local __KZ_UI_API = {
     CloseButton = CloseButton, MinimizeButton = MinimizeButton, BrandLogoShell = BrandLogoShell,
     Logo = BrandLogo, BrandTitle = BrandTitle, BrandSub = BrandSub, Profile = Profile,
     Avatar = Avatar, ProfileName = ProfileName, ProfileStatus = ProfileStatus, SideFooter = SideFooter,
-    GlowOne = GlowOne, windowStroke = windowStroke, sideLine = sideLine, topLine = topLine,
+    windowStroke = windowStroke, sideLine = sideLine, topLine = topLine,
     searchResultsStroke = searchResultsStroke, watermarkStroke = watermarkStroke,
     SIDEBAR_COMPACT = SIDEBAR_COMPACT, SIDEBAR_OPEN = SIDEBAR_OPEN,
     uiScaleFactor = uiScaleFactor, sidebarExpanded = sidebarExpanded, currentPage = currentPage,
