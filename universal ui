@@ -1,8 +1,16 @@
 -- Universal UI
 
-local __KZ_UI_ENV = (getgenv and getgenv()) or _G
+local __KZ_UI_ENV = _G
+if type(getgenv) == "function" then
+    local ok, environment = pcall(getgenv)
+    if ok and type(environment) == "table" then
+        __KZ_UI_ENV = environment
+    end
+end
 local __KZ_UI_OPTIONS = (__KZ_UI_ENV and __KZ_UI_ENV.__KZ_UI_OPTIONS) or {}
-if __KZ_UI_ENV then __KZ_UI_ENV.__KZ_UI_OPTIONS = nil end
+pcall(function()
+    if __KZ_UI_ENV then __KZ_UI_ENV.__KZ_UI_OPTIONS = nil end
+end)
 
 
 
@@ -29,9 +37,8 @@ local LOGO = LOGO_FALLBACK
 
 local ASSET_ROOT = "KZScripts/UI Library"
 local ASSET_DIR = ASSET_ROOT .. "/Assets"
-local LOGO_FILE = ASSET_DIR .. "/logo.png"
+local LOGO_FILE = ASSET_DIR .. "/kz-logo.png"
 
-local LOGO_PNG_BASE64 = "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"
 
 local function EnsureAssetFolders()
     if typeof(makefolder) ~= "function" or typeof(isfolder) ~= "function" then return false end
@@ -87,19 +94,26 @@ end
 
 local function SaveAndLoadLogo()
     EnsureAssetFolders()
-    local decoded
-    local okDecode, decodedOrErr = pcall(Base64Decode, LOGO_PNG_BASE64)
-    if okDecode then decoded = decodedOrErr end
-    if type(decoded) ~= "string" or #decoded < 32 then
-        return LOGO_FALLBACK
-    end
-    if typeof(writefile) == "function" then
-        pcall(writefile, LOGO_FILE, decoded)
-    end
+
     if typeof(isfile) == "function" and isfile(LOGO_FILE) then
-        local asset = ResolveCustomAsset(LOGO_FILE)
-        if asset then return asset end
+        local ok, asset = pcall(ResolveCustomAsset, LOGO_FILE)
+        if ok and type(asset) == "string" and asset ~= "" then return asset end
     end
+
+    if typeof(writefile) == "function" and game and game.HttpGet then
+        local okDownload, body = pcall(function()
+            return game:HttpGet("https://raw.githubusercontent.com/zaddy1211/ui/main/assets/kz-logo.png")
+        end)
+        if okDownload and type(body) == "string" and #body > 64 then
+            pcall(writefile, LOGO_FILE, body)
+        end
+    end
+
+    if typeof(isfile) == "function" and isfile(LOGO_FILE) then
+        local ok, asset = pcall(ResolveCustomAsset, LOGO_FILE)
+        if ok and type(asset) == "string" and asset ~= "" then return asset end
+    end
+
     return LOGO_FALLBACK
 end
 
@@ -146,6 +160,15 @@ local Themes = {
         ElementHoverBG = Color3.fromRGB(255, 212, 229), Accent = Color3.fromRGB(255, 105, 180),
         TextMain = Color3.fromRGB(97, 42, 68), TextSub = Color3.fromRGB(179, 110, 140),
         Border = Color3.fromRGB(247, 178, 205), ControlBG = Color3.fromRGB(255, 220, 234),
+    },
+
+    ["Cherry Blossom"] = {
+        MainBG = Color3.fromRGB(28, 19, 31), SidebarBG = Color3.fromRGB(35, 22, 38),
+        TopbarBG = Color3.fromRGB(43, 27, 44), SectionBG = Color3.fromRGB(42, 27, 44),
+        SectionHeaderBG = Color3.fromRGB(55, 32, 54), ElementBG = Color3.fromRGB(52, 31, 52),
+        ElementHoverBG = Color3.fromRGB(78, 42, 69), Accent = Color3.fromRGB(244, 143, 177),
+        TextMain = Color3.fromRGB(255, 244, 248), TextSub = Color3.fromRGB(194, 150, 174),
+        Border = Color3.fromRGB(92, 52, 80), ControlBG = Color3.fromRGB(47, 28, 48),
     },
 
     ["Redline"] = {
@@ -198,6 +221,7 @@ local Themes = {
 local ThemeAccents = {
     ["KZ Scripts"] = {Accent2 = Color3.fromRGB(192, 132, 252), Accent3 = Color3.fromRGB(124, 58, 237)},
     ["Hello Kitty"] = {Accent2 = Color3.fromRGB(255, 158, 205), Accent3 = Color3.fromRGB(230, 72, 142)},
+    ["Cherry Blossom"] = {Accent2 = Color3.fromRGB(251, 182, 206), Accent3 = Color3.fromRGB(190, 92, 139)},
     ["Redline"] = {Accent2 = Color3.fromRGB(248, 113, 113), Accent3 = Color3.fromRGB(185, 28, 28)},
     ["Midnight"] = {Accent2 = Color3.fromRGB(96, 165, 250), Accent3 = Color3.fromRGB(37, 99, 235)},
     ["Emerald"] = {Accent2 = Color3.fromRGB(52, 211, 153), Accent3 = Color3.fromRGB(5, 150, 105)},
@@ -213,6 +237,40 @@ end
 local themeName = (Themes[__KZ_UI_OPTIONS.Theme] and __KZ_UI_OPTIONS.Theme) or "KZ Scripts"
 local T = {}
 for key, value in pairs(Themes[themeName]) do T[key] = value end
+
+-- Visual theme artwork is kept separate from the UI layout so the existing
+-- game modules only see the same public controls and adapter methods.
+local ThemeArtFiles = {
+    ["KZ Scripts"] = "kz-anime-night.jpg",
+    ["Hello Kitty"] = "pastel-cat.jpg",
+    ["Cherry Blossom"] = "cherry-blossom-dusk.jpg",
+}
+local LoaderArtFile = "kz-loader-night.jpg"
+
+-- Public GitHub asset source. Missing artwork is downloaded once and then
+-- reused from the executor cache on later launches.
+local ThemeArtBaseURL = "https://raw.githubusercontent.com/zaddy1211/ui/main/assets/"
+local ThemeArtCacheDir = ASSET_DIR
+
+local function DownloadThemeArt(fileName)
+    if type(fileName) ~= "string" or typeof(writefile) ~= "function" then return nil end
+    EnsureAssetFolders()
+    local destination = ThemeArtCacheDir .. "/" .. fileName
+    if typeof(isfile) == "function" and isfile(destination) then return destination end
+
+    local ok, body = pcall(function()
+        if game.HttpGet then return game:HttpGet(ThemeArtBaseURL .. fileName) end
+        return nil
+    end)
+    if not ok or type(body) ~= "string" or #body < 64 then return nil end
+
+    local wrote = pcall(writefile, destination, body)
+    if wrote and (typeof(isfile) ~= "function" or isfile(destination)) then
+        return destination
+    end
+    return nil
+end
+
 -- Share theme colors
 pcall(function()
     getgenv().__kzQBAccent = T.Accent
@@ -421,6 +479,220 @@ BindTheme(function()
     if WindowFade.Parent then WindowFade.BackgroundColor3 = T.MainBG end
 end)
 
+local Artwork = New("ImageLabel", {
+    Parent = Window, Name = "ThemeArtwork", Size = UDim2.new(1, 42, 1, 42),
+    Position = UDim2.fromOffset(-21, -21), BackgroundTransparency = 1,
+    ImageTransparency = 0.35, ScaleType = Enum.ScaleType.Crop,
+    ImageColor3 = Color3.fromRGB(255, 255, 255), ZIndex = 1,
+})
+local ArtworkShade = New("Frame", {
+    Parent = Window, Name = "ArtworkShade", Size = UDim2.fromScale(1, 1),
+    BackgroundColor3 = T.MainBG, BackgroundTransparency = 0.52,
+    BorderSizePixel = 0, ZIndex = 2,
+})
+local ArtworkVignette = New("Frame", {
+    Parent = Window, Name = "ArtworkVignette", Size = UDim2.fromScale(1, 1),
+    BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 0.9,
+    BorderSizePixel = 0, ZIndex = 3,
+})
+
+local function ResolveThemeArt(theme)
+    local fileName = ThemeArtFiles[theme]
+    if type(fileName) ~= "string" or typeof(isfile) ~= "function" then return nil end
+    local candidates = {
+        ASSET_DIR .. "/" .. fileName,
+        "KZ_UI_ThemeAssets/" .. fileName,
+        fileName,
+    }
+    local downloaded = DownloadThemeArt(fileName)
+    if downloaded then table.insert(candidates, 1, downloaded) end
+    for _, path in ipairs(candidates) do
+        if isfile(path) then
+            local ok, asset = pcall(ResolveCustomAsset, path)
+            if ok and type(asset) == "string" and asset ~= "" then return asset end
+        end
+    end
+    return nil
+end
+
+local function ResolveLoaderArt()
+    if typeof(isfile) ~= "function" then return nil end
+    local candidates = {ASSET_DIR .. "/" .. LoaderArtFile, "KZ_UI_ThemeAssets/" .. LoaderArtFile, LoaderArtFile}
+    local downloaded = DownloadThemeArt(LoaderArtFile)
+    if downloaded then table.insert(candidates, 1, downloaded) end
+    for _, path in ipairs(candidates) do
+        if isfile(path) then
+            local ok, asset = pcall(ResolveCustomAsset, path)
+            if ok and type(asset) == "string" and asset ~= "" then return asset end
+        end
+    end
+    return ResolveThemeArt("KZ Scripts")
+end
+
+
+local function ResolveBackgroundMotionAsset(fileName)
+    if type(fileName) ~= "string" or typeof(isfile) ~= "function" then return nil end
+    local candidates = {
+        ASSET_DIR .. "/" .. fileName,
+        "KZ_UI_ThemeAssets/" .. fileName,
+        fileName,
+    }
+    local downloaded = DownloadThemeArt(fileName)
+    if downloaded then table.insert(candidates, 1, downloaded) end
+    for _, path in ipairs(candidates) do
+        if isfile(path) then
+            local ok, asset = pcall(ResolveCustomAsset, path)
+            if ok and type(asset) == "string" and asset ~= "" then return asset end
+        end
+    end
+    return nil
+end
+
+local function UpdateThemeArt(theme, animate)
+    if not Artwork or not Artwork.Parent then return end
+    local asset = ResolveThemeArt(theme)
+    if asset then
+        if animate then Tween(Artwork, 0.24, {ImageTransparency = 1}, Enum.EasingStyle.Sine) end
+        task.delay(animate and 0.2 or 0, function()
+            if not Artwork.Parent then return end
+            Artwork.Image = asset
+            Artwork.ImageTransparency = animate and 1 or 0.62
+            if animate then Tween(Artwork, 0.55, {ImageTransparency = 0.62}, Enum.EasingStyle.Quint) end
+        end)
+    else
+        Artwork.Image = ""
+    end
+    ArtworkShade.BackgroundColor3 = T.MainBG
+    ArtworkVignette.BackgroundTransparency = theme == "Hello Kitty" and 0.9 or 0.82
+end
+
+UpdateThemeArt(themeName, false)
+BindTheme(function()
+    if ArtworkShade.Parent then ArtworkShade.BackgroundColor3 = T.MainBG end
+end)
+
+
+local __KZ_BackgroundMotion = {
+    Layer = nil,
+    Objects = {},
+    Generation = 0,
+    Started = false,
+}
+
+function __KZ_BackgroundMotion.Style()
+    if themeName == "Cherry Blossom" then
+        return {
+            File = "kz-cherry-petal-256.png",
+            Count = 12, Speed = 0.010, Sway = 0.055,
+            MinSize = 13, MaxSize = 25, Opacity = 0.72,
+            Interval = 0.055,
+        }
+    elseif themeName == "Hello Kitty" then
+        return {
+            File = "kz-heart-particle.png",
+            Count = 8, Speed = 0.007, Sway = 0.035,
+            MinSize = 17, MaxSize = 30, Opacity = 0.58,
+            Interval = 0.065,
+        }
+    end
+    return {
+        File = "kz-falling-leaf-256.png",
+        Count = 10, Speed = 0.008, Sway = 0.065,
+        MinSize = 16, MaxSize = 28, Opacity = 0.70,
+        Interval = 0.055,
+    }
+end
+
+function __KZ_BackgroundMotion.Clear()
+    __KZ_BackgroundMotion.Generation = __KZ_BackgroundMotion.Generation + 1
+    for index = #__KZ_BackgroundMotion.Objects, 1, -1 do
+        local particle = __KZ_BackgroundMotion.Objects[index]
+        if particle and particle.Node and particle.Node.Parent then particle.Node:Destroy() end
+        __KZ_BackgroundMotion.Objects[index] = nil
+    end
+end
+
+function __KZ_BackgroundMotion.Build()
+    __KZ_BackgroundMotion.Clear()
+    if not __KZ_BackgroundMotion.Layer or not __KZ_BackgroundMotion.Layer.Parent then return end
+
+    local style = __KZ_BackgroundMotion.Style()
+    local asset = ResolveBackgroundMotionAsset(style.File)
+    if not asset then return end
+
+    local generation = __KZ_BackgroundMotion.Generation
+    for index = 1, style.Count do
+        local particle = New("ImageLabel", {
+            Parent = __KZ_BackgroundMotion.Layer,
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Size = UDim2.fromOffset(math.random(style.MinSize, style.MaxSize), math.random(style.MinSize, style.MaxSize)),
+            Position = UDim2.fromScale(math.random(0, 100) / 100, math.random(-10, 110) / 100),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Image = asset,
+            ImageColor3 = Color3.fromRGB(255, 255, 255),
+            ImageTransparency = 1,
+            ScaleType = Enum.ScaleType.Fit,
+            ZIndex = 4,
+        })
+        table.insert(__KZ_BackgroundMotion.Objects, {
+            Node = particle,
+            X = math.random(-8, 108) / 100,
+            Y = math.random(0, 125) / 100,
+            Speed = style.Speed * math.random(78, 122) / 100,
+            Sway = style.Sway * math.random(70, 130) / 100,
+            Rotation = math.random(-35, 35),
+            Spin = math.random(-80, 80),
+        })
+    end
+
+    task.spawn(function()
+        while not destroyed
+            and generation == __KZ_BackgroundMotion.Generation
+            and __KZ_BackgroundMotion.Layer
+            and __KZ_BackgroundMotion.Layer.Parent do
+            for _, particle in ipairs(__KZ_BackgroundMotion.Objects) do
+                local node = particle.Node
+                if node and node.Parent then
+                    particle.Y = (particle.Y + particle.Speed) % 1.25
+                    local y = particle.Y - 0.12
+                    local x = particle.X + particle.Sway * math.sin((particle.Y + particle.Rotation) * 5.2)
+                    local fadeIn = math.clamp((y + 0.08) / 0.18, 0, 1)
+                    local fadeOut = math.clamp((1.08 - y) / 0.18, 0, 1)
+                    local fade = math.min(fadeIn, fadeOut)
+                    node.Position = UDim2.fromScale(x, y)
+                    node.Rotation = particle.Rotation + particle.Spin * math.sin(particle.Y * 6)
+                    node.ImageTransparency = 1 - (style.Opacity * fade)
+                end
+            end
+            task.wait(style.Interval)
+        end
+    end)
+end
+
+function __KZ_BackgroundMotion.Start()
+    if __KZ_BackgroundMotion.Started then return end
+    __KZ_BackgroundMotion.Started = true
+
+    if Artwork then Artwork.Visible = true end
+    __KZ_BackgroundMotion.Layer = New("Frame", {
+        Parent = Window,
+        Name = "ThemeMotionLayer",
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        ZIndex = 4,
+    })
+
+    __KZ_BackgroundMotion.Build()
+    BindTheme(function()
+        __KZ_BackgroundMotion.Build()
+    end)
+end
+
+__KZ_BackgroundMotion.Start()
+
 local SIDEBAR_COMPACT, SIDEBAR_OPEN = 64, 188
 local sidebarExpanded = false
 local currentPage = "Home"
@@ -437,7 +709,7 @@ local MARGIN = 12
 
 local Sidebar = New("Frame", {
     Parent = Window, Name = "Sidebar", Size = UDim2.new(0, SIDEBAR_COMPACT, 1, 0),
-    BackgroundColor3 = T.SidebarBG, BackgroundTransparency = 0.1,
+    BackgroundColor3 = T.SidebarBG, BackgroundTransparency = 0.62,
     BorderSizePixel = 0, ZIndex = 20, ClipsDescendants = true,
 })
 
@@ -545,7 +817,7 @@ local SideFooter = New("Frame", {
 })
 local Profile = New("Frame", {
     Parent = SideFooter, Position = UDim2.fromOffset(10, 8), Size = UDim2.new(1, -20, 0, 50),
-    BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.25, ZIndex = 23,
+    BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.7, ZIndex = 23,
 })
 Corner(Profile, 12)
 Gradient(Profile, {function(t) return Mix(t.ElementBG, t.Accent3, .13) end, function(t) return Mix(t.ElementBG, t.Accent2, .10) end}, 15)
@@ -617,7 +889,7 @@ local Breadcrumb = New("TextLabel", {
 local SearchBox = New("Frame", {
     Parent = Topbar, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -104, 0.5, 0),
     Size = UDim2.fromOffset(210, 36), BackgroundColor3 = T.ControlBG,
-    BackgroundTransparency = 0.12, ZIndex = 12,
+    BackgroundTransparency = 0.72, ZIndex = 12,
 })
 Corner(SearchBox, 11)
 Gradient(SearchBox, {function(t) return Mix(t.ControlBG, t.Accent3, .12) end, function(t) return Mix(t.ControlBG, t.Accent2, .10) end}, 0)
@@ -637,7 +909,7 @@ local function IconButton(icon, xOffset)
     local button = New("ImageButton", {
         Parent = Topbar, AnchorPoint = Vector2.new(1, 0.5),
         Position = UDim2.new(1, xOffset, 0.5, 0), Size = UDim2.fromOffset(32, 32),
-        BackgroundColor3 = T.ControlBG, BackgroundTransparency = 0.18,
+        BackgroundColor3 = T.ControlBG, BackgroundTransparency = 0.68,
         Image = icon, ImageColor3 = T.TextSub, AutoButtonColor = false, ZIndex = 12,
     })
     Corner(button, 10)
@@ -645,7 +917,7 @@ local function IconButton(icon, xOffset)
         Tween(button, 0.16, {BackgroundTransparency = 0, ImageColor3 = T.TextMain})
     end)
     button.MouseLeave:Connect(function()
-        Tween(button, 0.16, {BackgroundTransparency = 0.18, ImageColor3 = T.TextSub})
+        Tween(button, 0.16, {BackgroundTransparency = 0.68, ImageColor3 = T.TextSub})
     end)
     return button
 end
@@ -1157,13 +1429,57 @@ local function CreatePage(name)
     return pages[name]
 end
 
+-- Frosted controls use a light-catching overlay plus deliberate motion so the
+-- artwork remains visible instead of being hidden behind opaque rectangles.
+__KZ_QOL.ApplyGlassControl = function(control, radius)
+    if not control or not control.Parent then return end
+    control.BackgroundTransparency = 0.78
+    control.ClipsDescendants = true
+    local controlScale = New("UIScale", {Parent = control, Scale = 1})
+    local glint = New("Frame", {
+        Parent = control, Size = UDim2.new(1, -2, 0.48, 0), Position = UDim2.fromOffset(1, 1),
+        BackgroundColor3 = T.TextMain, BackgroundTransparency = 0.91,
+        BorderSizePixel = 0, Active = false, ZIndex = (control.ZIndex or 1) + 1,
+    })
+    Corner(glint, radius or 9)
+    New("UIGradient", {
+        Parent = glint, Rotation = 90,
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.28),
+            NumberSequenceKeypoint.new(1, 1),
+        }),
+    })
+    control.MouseEnter:Connect(function()
+        Tween(control, 0.16, {BackgroundTransparency = 0.22}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(controlScale, 0.16, {Scale = 1.025}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(glint, 0.16, {BackgroundTransparency = 0.78}, Enum.EasingStyle.Sine)
+    end)
+    control.MouseLeave:Connect(function()
+        Tween(control, 0.18, {BackgroundTransparency = 0.78}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(controlScale, 0.18, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(glint, 0.18, {BackgroundTransparency = 0.91}, Enum.EasingStyle.Sine)
+    end)
+    if control:IsA("GuiButton") then
+        control.MouseButton1Down:Connect(function()
+            Tween(controlScale, 0.07, {Scale = 0.97}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        end)
+        control.MouseButton1Up:Connect(function()
+            Tween(controlScale, 0.16, {Scale = 1.025}, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        end)
+    end
+    BindTheme(function()
+        if glint.Parent then glint.BackgroundColor3 = T.TextMain end
+    end)
+end
+
 local function Section(page, title, subtitle, widthScale)
     local card = New("Frame", {
         Parent = page.Body, Size = UDim2.new(widthScale or 1, 0, 0, 0),
         AutomaticSize = Enum.AutomaticSize.Y, BackgroundColor3 = T.SectionBG,
-        BackgroundTransparency = 0.14,
+        BackgroundTransparency = 0.72,
     })
     Corner(card, 14)
+    local cardScale = New("UIScale", {Parent = card, Scale = 1})
     Gradient(card, {
         function(t) return Mix(t.SectionBG, t.Accent3, 0.10) end,
         "SectionBG",
@@ -1180,6 +1496,14 @@ local function Section(page, title, subtitle, widthScale)
         PaddingLeft = UDim.new(0, 14), PaddingRight = UDim.new(0, 14),
     })
     New("UIListLayout", {Parent = card, Padding = UDim.new(0, 9), SortOrder = Enum.SortOrder.LayoutOrder})
+    card.MouseEnter:Connect(function()
+        Tween(card, 0.18, {BackgroundTransparency = 0.52}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(cardScale, 0.18, {Scale = 1.006}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    end)
+    card.MouseLeave:Connect(function()
+        Tween(card, 0.2, {BackgroundTransparency = 0.72}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(cardScale, 0.2, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    end)
     local heading = New("Frame", {
         Parent = card, Size = UDim2.new(1, 0, 0, subtitle and 42 or 25), BackgroundTransparency = 1,
     })
@@ -1252,15 +1576,31 @@ end
 local function ElementBase(page, parent, label, height)
     local row = New("Frame", {
         Parent = parent, Size = UDim2.new(1, 0, 0, height or 44),
-        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.06,
+        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.76,
     })
     Corner(row, 10)
+    local rowGlint = New("Frame", {
+        Parent = row, Size = UDim2.new(1, -2, 0.42, 0), Position = UDim2.fromOffset(1, 1),
+        BackgroundColor3 = T.TextMain, BackgroundTransparency = 0.94, BorderSizePixel = 0, Active = false,
+    })
+    Corner(rowGlint, 9)
+    New("UIGradient", {Parent = rowGlint, Rotation = 90, Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 1),
+    })})
     Gradient(row, {
         function(t) return Mix(t.ElementBG, t.Accent3, .07) end,
         "ElementBG",
         function(t) return Mix(t.ElementBG, t.Accent2, .065) end,
     }, 0)
     local outline = Stroke(row, "Border", 0.25)
+    local rowScale = New("UIScale", {Parent = row, Scale = 1})
+    local hoverEdge = New("Frame", {
+        Parent = row, Position = UDim2.fromOffset(5, 10), Size = UDim2.fromOffset(2, (height or 44) - 20),
+        BackgroundColor3 = T.Accent, BackgroundTransparency = 0.72,
+        BorderSizePixel = 0, ZIndex = 2,
+    })
+    Corner(hoverEdge, 999)
+    Gradient(hoverEdge, {"Accent3", "Accent", "Accent2"}, 90)
     local favoriteCount = (page.FavoriteCounts[label] or 0) + 1
     page.FavoriteCounts[label] = favoriteCount
     local favoriteKey = tostring(page.Name or "Page") .. "/" .. tostring(label) .. (favoriteCount > 1 and (" #" .. tostring(favoriteCount)) or "")
@@ -1268,13 +1608,24 @@ local function ElementBase(page, parent, label, height)
     table.insert(page.Searchables, searchable)
     if __KZ_QOL.RegisterFavoriteRow then __KZ_QOL.RegisterFavoriteRow(page, label, row, searchable) end
     row.MouseEnter:Connect(function()
-        Tween(row, 0.16, {BackgroundColor3 = T.ElementHoverBG, BackgroundTransparency = 0})
+        Tween(row, 0.16, {BackgroundColor3 = T.ElementHoverBG, BackgroundTransparency = 0.28})
+        Tween(rowScale, 0.18, {Scale = 1.016}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(hoverEdge, 0.18, {BackgroundTransparency = 0.03}, Enum.EasingStyle.Sine)
+        Tween(rowGlint, 0.18, {BackgroundTransparency = 0.78}, Enum.EasingStyle.Sine)
     end)
     row.MouseLeave:Connect(function()
-        Tween(row, 0.16, {BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.06})
+        Tween(row, 0.18, {BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.76})
+        Tween(rowScale, 0.18, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(hoverEdge, 0.18, {BackgroundTransparency = 0.72}, Enum.EasingStyle.Sine)
+        Tween(rowGlint, 0.18, {BackgroundTransparency = 0.94}, Enum.EasingStyle.Sine)
     end)
     BindTheme(function()
-        if row.Parent then row.BackgroundColor3 = T.ElementBG; outline.Color = T.Border end
+        if row.Parent then
+            row.BackgroundColor3 = T.ElementBG
+            rowGlint.BackgroundColor3 = T.TextMain
+            outline.Color = T.Border
+            hoverEdge.BackgroundColor3 = T.Accent
+        end
     end)
     return row
 end
@@ -1401,13 +1752,14 @@ local function Slider(page, parentCard, label, min, max, value, suffix, onChange
     local valueText = New("TextBox", {
         Parent = row, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 5),
         Size = UDim2.fromOffset(82, 23), BackgroundColor3 = T.ControlBG,
-        BackgroundTransparency = 0.12, BorderSizePixel = 0,
+        BackgroundTransparency = 0.78, BorderSizePixel = 0,
         Text = FormatNumber(current) .. (suffix or ""), Font = Enum.Font.GothamSemibold,
         TextSize = 10, TextColor3 = T.Accent, TextXAlignment = Enum.TextXAlignment.Center,
         ClearTextOnFocus = false, MultiLine = false, ZIndex = 5,
     })
     Corner(valueText, 7)
     Stroke(valueText, "Border", 0.32)
+    __KZ_QOL.ApplyGlassControl(valueText, 7)
 
     local track = New("TextButton", {
         Parent = row, Position = UDim2.new(0, 13, 1, -19), Size = UDim2.new(1, -26, 0, 7),
@@ -1686,11 +2038,13 @@ local function Dropdown(page, parentCard, label, options, default, onChanged)
     local box = New("TextButton", {
         Parent = row, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0),
         Size = UDim2.fromOffset(132, 28), BackgroundColor3 = T.ControlBG,
+        BackgroundTransparency = 0.78,
         Text = selected, TextColor3 = T.Accent, Font = Enum.Font.GothamMedium,
         TextSize = 10, AutoButtonColor = false, ZIndex = 10,
     })
     Corner(box, 9)
     Stroke(box, "Border", 0.35)
+    __KZ_QOL.ApplyGlassControl(box, 9)
 
     local menuHeight = math.min(#options * 31 + 12, 205)
     local menu = New("ScrollingFrame", {
@@ -1796,9 +2150,18 @@ local function Button(page, parentCard, label, emphasized, action)
     local row = New("Frame", {
         Parent = parentCard, Size = UDim2.new(1, 0, 0, 42),
         BackgroundColor3 = emphasized and T.Accent or T.ElementBG,
-        BackgroundTransparency = emphasized and 0.08 or 0.06,
+        BackgroundTransparency = emphasized and 0.38 or 0.74,
     })
     Corner(row, 10)
+    local buttonGlint = New("Frame", {
+        Parent = row, Size = UDim2.new(1, -2, 0.46, 0), Position = UDim2.fromOffset(1, 1),
+        BackgroundColor3 = emphasized and T.TextMain or T.TextMain, BackgroundTransparency = 0.92,
+        BorderSizePixel = 0, Active = false, ZIndex = 1,
+    })
+    Corner(buttonGlint, 9)
+    New("UIGradient", {Parent = buttonGlint, Rotation = 90, Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.24), NumberSequenceKeypoint.new(1, 1),
+    })})
 
     if not emphasized then
         Gradient(row, {
@@ -1808,6 +2171,15 @@ local function Button(page, parentCard, label, emphasized, action)
         }, 0)
     end
     local outline = Stroke(row, "Border", 0.32)
+    local buttonScale = New("UIScale", {Parent = row, Scale = 1})
+    local buttonEdge = New("Frame", {
+        Parent = row, Position = UDim2.fromOffset(5, 9), Size = UDim2.fromOffset(2, 24),
+        BackgroundColor3 = emphasized and T.TextMain or T.Accent,
+        BackgroundTransparency = emphasized and 0.4 or 0.72,
+        BorderSizePixel = 0, ZIndex = 2,
+    })
+    Corner(buttonEdge, 999)
+    Gradient(buttonEdge, {"Accent3", "Accent", "Accent2"}, 90)
     local favoriteCount = (page.FavoriteCounts[label] or 0) + 1
     page.FavoriteCounts[label] = favoriteCount
     local favoriteKey = tostring(page.Name or "Page") .. "/" .. tostring(label) .. (favoriteCount > 1 and (" #" .. tostring(favoriteCount)) or "")
@@ -1836,23 +2208,33 @@ local function Button(page, parentCard, label, emphasized, action)
         Parent = row, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
         Text = "", AutoButtonColor = false, ZIndex = 4,
     })
-    click.MouseButton1Down:Connect(function() Tween(row, 0.08, {Size = UDim2.new(1, -4, 0, 40), Position = UDim2.fromOffset(2, 1)}) end)
-    click.MouseButton1Up:Connect(function() Tween(row, 0.14, {Size = UDim2.new(1, 0, 0, 42), Position = UDim2.new()}) end)
+    click.MouseButton1Down:Connect(function()
+        Tween(buttonScale, 0.08, {Scale = 0.96}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    end)
+    click.MouseButton1Up:Connect(function()
+        Tween(buttonScale, 0.2, {Scale = 1.02}, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    end)
     click.MouseButton1Click:Connect(function()
         if action then action() else Toast("UI Preview", label .. " is visual-only in this mockup.") end
     end)
     row.MouseEnter:Connect(function()
+        Tween(buttonScale, 0.18, {Scale = 1.02}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(buttonEdge, 0.18, {BackgroundTransparency = emphasized and 0.03 or 0.04}, Enum.EasingStyle.Sine)
+        Tween(buttonGlint, 0.18, {BackgroundTransparency = 0.74}, Enum.EasingStyle.Sine)
         if emphasized then
-            Tween(row, 0.16, {BackgroundColor3 = getAccentHover(), BackgroundTransparency = 0})
+            Tween(row, 0.16, {BackgroundColor3 = getAccentHover(), BackgroundTransparency = 0.06})
         else
-            Tween(row, 0.16, {BackgroundColor3 = T.ElementHoverBG, BackgroundTransparency = 0})
+            Tween(row, 0.16, {BackgroundColor3 = T.ElementHoverBG, BackgroundTransparency = 0.12})
         end
     end)
     row.MouseLeave:Connect(function()
+        Tween(buttonScale, 0.18, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(buttonEdge, 0.18, {BackgroundTransparency = emphasized and 0.4 or 0.72}, Enum.EasingStyle.Sine)
+        Tween(buttonGlint, 0.18, {BackgroundTransparency = 0.92}, Enum.EasingStyle.Sine)
         if emphasized then
-            Tween(row, 0.16, {BackgroundColor3 = T.Accent, BackgroundTransparency = 0.08})
+            Tween(row, 0.18, {BackgroundColor3 = T.Accent, BackgroundTransparency = 0.38})
         else
-            Tween(row, 0.16, {BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.06})
+            Tween(row, 0.18, {BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.74})
         end
     end)
     BindTheme(function()
@@ -1864,6 +2246,8 @@ local function Button(page, parentCard, label, emphasized, action)
                 row.BackgroundColor3 = T.ElementBG
                 text.TextColor3 = T.TextMain
             end
+            buttonEdge.BackgroundColor3 = emphasized and T.TextMain or T.Accent
+            buttonGlint.BackgroundColor3 = T.TextMain
             outline.Color = T.Border
         end
     end)
@@ -1879,12 +2263,14 @@ local function Textbox(page, parentCard, label, placeholder, default, onChanged)
     local box = New("TextBox", {
         Parent = row, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0),
         Size = UDim2.fromOffset(150, 28), BackgroundColor3 = T.ControlBG,
+        BackgroundTransparency = 0.78,
         Text = tostring(default or ""), PlaceholderText = placeholder or "Enter text...",
         PlaceholderColor3 = T.TextSub, TextColor3 = T.TextMain, Font = Enum.Font.Gotham,
         TextSize = 10, ClearTextOnFocus = false, ZIndex = 10,
     })
     Corner(box, 9)
     Stroke(box, "Border", 0.35)
+    __KZ_QOL.ApplyGlassControl(box, 9)
     box.FocusLost:Connect(function(enterPressed)
         if onChanged then
             task.spawn(function() pcall(onChanged, box.Text, enterPressed) end)
@@ -1928,11 +2314,13 @@ local function Keybind(page, parentCard, label, defaultKey, onChanged)
     local box = New("TextButton", {
         Parent = row, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0),
         Size = UDim2.fromOffset(110, 28), BackgroundColor3 = T.ControlBG,
+        BackgroundTransparency = 0.78,
         Text = current and current.Name or "None", TextColor3 = T.Accent, Font = Enum.Font.GothamMedium,
         TextSize = 10, AutoButtonColor = false, ZIndex = 10,
     })
     Corner(box, 9)
     local boxStroke = Stroke(box, "Border", 0.35)
+    __KZ_QOL.ApplyGlassControl(box, 9)
     local control
     local function SetKey(key, fire)
         current = key
@@ -2328,7 +2716,7 @@ local function StatGrid(page, stats)
     for index, stat in ipairs(stats) do
         local card = New("Frame", {
             Parent = grid, LayoutOrder = index, BackgroundColor3 = T.SectionBG,
-            BackgroundTransparency = 0.07,
+            BackgroundTransparency = 0.72,
         })
         Corner(card, 14); Gradient(card, {function(t) return Mix(t.SectionBG, t.Accent3, .12) end, function(t) return Mix(t.SectionBG, t.Accent2, .10) end}, 20); Stroke(card, "Border", 0.18)
         local value = New("TextLabel", {
@@ -2382,7 +2770,7 @@ end
 local function HomeInfoRow(parent, labelText, valueText, accentValue)
     local row = New("Frame", {
         Parent = parent, Size = UDim2.new(1, 0, 0, 38),
-        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.03,
+        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.76,
     })
     Corner(row, 10)
     Gradient(row, {
@@ -2416,7 +2804,7 @@ end
 local function HomeStatCard(parent, order, titleText, valueText, accentValue)
     local card = New("Frame", {
         Parent = parent, LayoutOrder = order, BackgroundColor3 = T.SectionBG,
-        BackgroundTransparency = 0.14,
+        BackgroundTransparency = 0.72,
     })
     Corner(card, 12)
     Gradient(card, {
@@ -2450,7 +2838,7 @@ local Home = CreatePage("Home")
 do
 local welcomeCard = New("Frame", {
     Parent = Home.Body, Size = UDim2.new(1, 0, 0, 86), BackgroundColor3 = T.SectionBG,
-    BackgroundTransparency = 0.08, ClipsDescendants = true,
+    BackgroundTransparency = 0.70, ClipsDescendants = true,
 })
 Corner(welcomeCard, 15)
 Gradient(welcomeCard, {
@@ -2512,9 +2900,19 @@ end)
 local lastIteration = tick()
 local frameCount = 0
 local currentFPS = 60
+local artworkMotionClock = 0
 
 table.insert(connections, RunService.RenderStepped:Connect(function(delta)
     frameCount = frameCount + 1
+    artworkMotionClock = artworkMotionClock + (delta or 0)
+    -- Very slow parallax keeps the artwork alive without burning a frame on
+    -- decorative effects. It automatically stops when the window is hidden.
+    if Artwork and Artwork.Parent and Window.Visible and artworkMotionClock >= 0.033 then
+        artworkMotionClock = 0
+        local t = tick()
+        Artwork.Position = UDim2.new(0, -21 + math.sin(t * 0.22) * 3, 0, -21 + math.cos(t * 0.18) * 2)
+        Artwork.Rotation = math.sin(t * 0.16) * 0.18
+    end
     local now = tick()
     if now - lastIteration >= 0.5 then
         currentFPS = math.floor(frameCount / (now - lastIteration) + 0.5)
@@ -2579,7 +2977,7 @@ end
 local function MakeFavoriteHomeRow(meta)
     local row = New("Frame", {
         Parent = __KZ_QOL.FavoritesCard, Name = "KZFavoriteRow", Size = UDim2.new(1, 0, 0, 42),
-        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.06,
+        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.76,
     })
     Corner(row, 10)
     local outline = Stroke(row, "Border", 0.28)
@@ -2771,7 +3169,7 @@ end)
 -- Sync picker colors
 local AccentSyncPickers = {}
 
-ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"KZ Scripts", "Redline", "Midnight", "Emerald", "Frost", "Monochrome", "Hello Kitty"}, themeName, function(value)
+ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"KZ Scripts", "Hello Kitty", "Cherry Blossom"}, themeName, function(value)
     local selectedTheme = Themes[value] and value or "KZ Scripts"
     if selectedTheme == themeName then return end
     __KZ_QOL.PlayThemeTransition(function()
@@ -2793,6 +3191,7 @@ ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"
         for _, picker in ipairs(AccentSyncPickers) do
             pcall(function() picker:Set(T.Accent) end)
         end
+        UpdateThemeArt(selectedTheme, true)
         if homeThemeStat and homeThemeStat.Value.Parent then homeThemeStat.Value.Text = selectedTheme end
         for _, repaint in ipairs(themeBindings) do pcall(repaint) end
         if type(__KZ_ApplyTheme) == "function" then pcall(__KZ_ApplyTheme) end
@@ -3545,6 +3944,9 @@ __KZ_UpdateResponsiveScale()
 
 -- Animated background
 local function __KZ_CreateAmbientLayer(host, baseZ, intensity, trackForWindow)
+    -- Kept as a harmless compatibility hook for integrations that may call it.
+    -- Theme artwork is now the sole decorative background.
+    --[[ Legacy geometric animation implementation intentionally retired.
     local layer = New("Frame", {
         Parent = host, Name = "KZAmbient", Size = UDim2.fromScale(1, 1),
         BackgroundTransparency = 1, BorderSizePixel = 0,
@@ -3721,9 +4123,10 @@ local function __KZ_CreateAmbientLayer(host, baseZ, intensity, trackForWindow)
     end
 
     return layer
+    ]]
 end
 
-__KZ_CreateAmbientLayer(Window, 2, 1.25, true)
+-- Geometric ambient layer removed; theme artwork is the only background.
 
 -- Default pages
 __KZ_AddNav("Home", ICONS.Home, 1)
@@ -3753,7 +4156,9 @@ local function __KZ_PlayLoadAnimation()
     })
     Corner(Intro, 18)
     local introStroke = Stroke(Intro, "Accent", 1, 1.4)
-    local introScale = New("UIScale", {Parent = Intro, Scale = targetScale * 0.72})
+    -- Start almost at the final size: the former 72% scale made the loader
+    -- read like a small legacy overlay against the new full-image backdrop.
+    local introScale = New("UIScale", {Parent = Intro, Scale = targetScale * 0.92})
 
     local introBackdrop = New("Frame", {
         Parent = Intro, Size = UDim2.fromScale(1, 1),
@@ -3765,8 +4170,36 @@ local function __KZ_PlayLoadAnimation()
         function(t) return Mix(t.MainBG, t.Accent2, 0.2) end,
     }, 20)
     backdropGradient.Offset = Vector2.new(-0.18, -0.06)
-    __KZ_CreateAmbientLayer(Intro, 1001, 0.9, false)
-
+    local introArtwork = New("ImageLabel", {
+        Parent = Intro, Size = UDim2.new(1, 30, 1, 30), Position = UDim2.fromOffset(-15, -15),
+        BackgroundTransparency = 1, Image = ResolveLoaderArt() or "",
+        ImageTransparency = 0.16, ScaleType = Enum.ScaleType.Crop, ZIndex = 1001,
+    })
+    local introArtworkScale = New("UIScale", {Parent = introArtwork, Scale = 1.045})
+    local introArtworkShade = New("Frame", {
+        Parent = Intro, Size = UDim2.fromScale(1, 1), BackgroundColor3 = T.MainBG,
+        BackgroundTransparency = 0.70, BorderSizePixel = 0, ZIndex = 1001,
+    })
+    local loaderPanel = New("Frame", {
+        Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.77), Size = UDim2.fromOffset(460, 126),
+        BackgroundColor3 = T.SectionBG, BackgroundTransparency = 0.92,
+        BorderSizePixel = 0, ZIndex = 1002,
+    })
+    Corner(loaderPanel, 18)
+    local loaderPanelStroke = Stroke(loaderPanel, "Border", 1, 1.3)
+    Gradient(loaderPanel, {
+        function(t) return Mix(t.SectionBG, t.Accent3, 0.12) end,
+        function(t) return Mix(t.SectionBG, t.MainBG, 0.08) end,
+        function(t) return Mix(t.SectionBG, t.Accent, 0.08) end,
+    }, 12)
+    local loaderPanelEdge = New("Frame", {
+        Parent = loaderPanel, Position = UDim2.fromOffset(18, 23),
+        Size = UDim2.fromOffset(3, 80), BackgroundColor3 = T.Accent,
+        BackgroundTransparency = 0.65, BorderSizePixel = 0, ZIndex = 1003,
+    })
+    Corner(loaderPanelEdge, 999)
+    Gradient(loaderPanelEdge, {"Accent3", "Accent", "Accent2"}, 90)
     -- UI reveal masks
     local sidebarRevealMask = New("Frame", {
         Parent = Window, Name = "SidebarRevealMask", Position = UDim2.fromOffset(0, 0),
@@ -3855,28 +4288,36 @@ local function __KZ_PlayLoadAnimation()
 
     local subtitle = New("TextLabel", {
         Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.fromScale(0.5, 0.555), Size = UDim2.fromOffset(280, 24),
+        Position = UDim2.fromScale(0.5, 0.55), Size = UDim2.fromOffset(280, 24),
         BackgroundTransparency = 1, Text = "S C R I P T S", Font = Enum.Font.GothamMedium,
         TextSize = 11, TextColor3 = T.TextSub, TextTransparency = 1, ZIndex = 1002,
     })
 
+    local loaderEyebrow = New("TextLabel", {
+        Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.29), Size = UDim2.fromOffset(300, 18),
+        BackgroundTransparency = 1, Text = "UNIVERSAL UI  /  THEMED SHELL",
+        Font = Enum.Font.GothamMedium, TextSize = 8, TextColor3 = T.Accent3,
+        TextTransparency = 1, ZIndex = 1003,
+    })
+
     local statusLabel = New("TextLabel", {
         Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.fromScale(0.5, 0.61), Size = UDim2.fromOffset(260, 18),
+        Position = UDim2.fromScale(0.5, 0.72), Size = UDim2.fromOffset(260, 18),
         BackgroundTransparency = 1, Text = "INITIALIZING", Font = Enum.Font.GothamMedium,
         TextSize = 9, TextColor3 = T.Accent, TextTransparency = 1, ZIndex = 1002,
     })
 
     local loadingLabel = New("TextLabel", {
         Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.fromScale(0.5, 0.655), Size = UDim2.fromOffset(220, 20),
+        Position = UDim2.fromScale(0.5, 0.77), Size = UDim2.fromOffset(220, 20),
         BackgroundTransparency = 1, Text = "LOADING  0%", Font = Enum.Font.GothamSemibold,
         TextSize = 11, TextColor3 = T.TextSub, TextTransparency = 1, ZIndex = 1002,
     })
 
     local progressTrack = New("Frame", {
         Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.fromScale(0.5, 0.7), Size = UDim2.fromOffset(230, 5),
+        Position = UDim2.fromScale(0.5, 0.82), Size = UDim2.fromOffset(230, 5),
         BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.25,
         BorderSizePixel = 0, ClipsDescendants = true, ZIndex = 1002,
     })
@@ -3911,9 +4352,14 @@ local function __KZ_PlayLoadAnimation()
     task.spawn(function()
         Tween(Intro, 0.72, {GroupTransparency = 0}, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
         Tween(introScale, 1.05, {Scale = targetScale}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(introArtwork, 0.9, {ImageTransparency = 0.08}, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        Tween(introArtworkScale, 6.5, {Scale = 1.065}, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+        Tween(loaderPanel, 0.72, {BackgroundTransparency = 0.66}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(loaderPanelStroke, 0.72, {Transparency = 0.3}, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        Tween(loaderPanelEdge, 0.72, {BackgroundTransparency = 0.14}, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
         Tween(introStroke, 0.9, {Transparency = 0.16}, Enum.EasingStyle.Sine)
-        Tween(backdropGradient, 4.2, {Offset = Vector2.new(0.18, 0.06)}, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
         task.wait(0.35)
+        Tween(loaderEyebrow, 0.42, {TextTransparency = 0.08}, Enum.EasingStyle.Sine)
         Tween(logoK, 0.62, {TextTransparency = 0, TextStrokeTransparency = 0.82}, Enum.EasingStyle.Sine)
         Tween(logoZ, 0.72, {TextTransparency = 0, TextStrokeTransparency = 0.82}, Enum.EasingStyle.Sine)
         Tween(logoSlash, 0.58, {BackgroundTransparency = 0.04}, Enum.EasingStyle.Sine)
@@ -3965,6 +4411,7 @@ local function __KZ_PlayLoadAnimation()
         Tween(logoZ, 0.44, {TextTransparency = 1, TextStrokeTransparency = 1}, Enum.EasingStyle.Sine)
         Tween(logoSlash, 0.38, {BackgroundTransparency = 1}, Enum.EasingStyle.Sine)
         Tween(logoUnderline, 0.38, {BackgroundTransparency = 1, Size = UDim2.fromOffset(36, 2)}, Enum.EasingStyle.Sine)
+        Tween(loaderEyebrow, 0.38, {TextTransparency = 1}, Enum.EasingStyle.Sine)
         Tween(subtitle, 0.42, {TextTransparency = 1}, Enum.EasingStyle.Sine)
         Tween(statusLabel, 0.38, {TextTransparency = 1}, Enum.EasingStyle.Sine)
         Tween(loadingLabel, 0.38, {TextTransparency = 1}, Enum.EasingStyle.Sine)
@@ -3981,7 +4428,7 @@ end
 __KZ_PlayLoadAnimation()
 
 -- Legacy support
-local KZAdapter = {}
+KZAdapter = {}
 KZAdapter.Version = "Universal Football Fusion UI"
 KZAdapter.Theme = {Hightlight = T.Accent, Accent = T.Accent}
 BindTheme(function() KZAdapter.Theme.Hightlight = T.Accent; KZAdapter.Theme.Accent = T.Accent end)
@@ -4008,7 +4455,7 @@ KZAdapter.ProtectGui = function(first, second)
     pcall(function() if protect_gui then protect_gui(gui) elseif protectgui then protectgui(gui) elseif syn and syn.protect_gui then syn.protect_gui(gui) end end)
 end
 
-local LyraZen = {}
+LyraZen = {}
 LyraZen.Version = "Universal Football Fusion UI"
 LyraZen.Theme = T
 function LyraZen:Track(connection) return KZAdapter:Track(connection) end
@@ -4018,7 +4465,9 @@ function LyraZen:Unload() return KZAdapter:Unload() end
 function LyraZen.new(config) return KZAdapter.new(config) end
 LyraZen.ProtectGui = KZAdapter.ProtectGui
 
-local __KZ_UI_API = {
+-- Keep the final API on an existing table so this large one-file UI stays
+-- below Luau's 200-local-register compilation limit.
+KZAdapter.__KZ_UI_API = {
     Version = "FootballFusionShell-Universal-1.0",
     Window = __KZ_Window, WindowGui = Window, Screen = Screen,
     Theme = T, Themes = Themes, ThemeName = function() return themeName end,
@@ -4049,6 +4498,6 @@ local __KZ_UI_API = {
     GetCursor = function() return currentCursor end,
     IsDestroyed = function() return destroyed end,
 }
-__KZ_UI_API.CreateWindow = function(_) return __KZ_Window end
-return __KZ_UI_API
+KZAdapter.__KZ_UI_API.CreateWindow = function(_) return __KZ_Window end
+return KZAdapter.__KZ_UI_API
 end
