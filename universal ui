@@ -171,13 +171,13 @@ local Themes = {
         Border = Color3.fromRGB(92, 52, 80), ControlBG = Color3.fromRGB(47, 28, 48),
     },
 
-    ["Christmas"] = {
-        MainBG = Color3.fromRGB(13, 25, 22), SidebarBG = Color3.fromRGB(16, 31, 25),
-        TopbarBG = Color3.fromRGB(16, 32, 25), SectionBG = Color3.fromRGB(20, 35, 29),
-        SectionHeaderBG = Color3.fromRGB(29, 46, 36), ElementBG = Color3.fromRGB(30, 46, 35),
-        ElementHoverBG = Color3.fromRGB(48, 58, 40), Accent = Color3.fromRGB(202, 82, 87),
-        TextMain = Color3.fromRGB(244, 237, 227), TextSub = Color3.fromRGB(174, 187, 168),
-        Border = Color3.fromRGB(57, 71, 53), ControlBG = Color3.fromRGB(32, 51, 39),
+    ["Halloween"] = {
+        MainBG = Color3.fromRGB(16, 12, 23), SidebarBG = Color3.fromRGB(23, 16, 32),
+        TopbarBG = Color3.fromRGB(29, 20, 39), SectionBG = Color3.fromRGB(30, 21, 40),
+        SectionHeaderBG = Color3.fromRGB(39, 25, 48), ElementBG = Color3.fromRGB(37, 24, 46),
+        ElementHoverBG = Color3.fromRGB(59, 32, 62), Accent = Color3.fromRGB(255, 139, 45),
+        TextMain = Color3.fromRGB(255, 246, 234), TextSub = Color3.fromRGB(196, 176, 211),
+        Border = Color3.fromRGB(83, 49, 103), ControlBG = Color3.fromRGB(32, 21, 43),
     },
 
     ["Redline"] = {
@@ -228,7 +228,7 @@ local Themes = {
 }
 
 local ThemeAccents = {
-    ["Christmas"] = {Accent2 = Color3.fromRGB(221, 187, 122), Accent3 = Color3.fromRGB(71, 114, 82)},
+    ["Halloween"] = {Accent2 = Color3.fromRGB(255, 194, 106), Accent3 = Color3.fromRGB(170, 104, 242)},
     ["KZ Scripts"] = {Accent2 = Color3.fromRGB(192, 132, 252), Accent3 = Color3.fromRGB(124, 58, 237)},
     ["Hello Kitty"] = {Accent2 = Color3.fromRGB(255, 158, 205), Accent3 = Color3.fromRGB(230, 72, 142)},
     ["Cherry Blossom"] = {Accent2 = Color3.fromRGB(251, 182, 206), Accent3 = Color3.fromRGB(190, 92, 139)},
@@ -244,31 +244,19 @@ for name, extra in pairs(ThemeAccents) do
     Themes[name].Accent3 = extra.Accent3
 end
 
--- Remember appearance before building the loader; old Halloween selections migrate to Christmas.
-do
-    local preferred = __KZ_UI_OPTIONS.Theme
-    if preferred == nil and type(readfile) == "function" and type(isfile) == "function" then
-        pcall(function()
-            local path = ASSET_ROOT .. "/ThemePreference-v1.txt"
-            if isfile(path) then preferred = readfile(path) end
-        end)
-    end
-    if preferred == "Halloween" then preferred = "Christmas" end
-    __KZ_UI_OPTIONS.Theme = Themes[preferred] and preferred or "KZ Scripts"
-end
-local themeName = __KZ_UI_OPTIONS.Theme
+local themeName = (Themes[__KZ_UI_OPTIONS.Theme] and __KZ_UI_OPTIONS.Theme) or "KZ Scripts"
 local T = {}
 for key, value in pairs(Themes[themeName]) do T[key] = value end
 
 -- Visual theme artwork is kept separate from the UI layout so the existing
 -- game modules only see the same public controls and adapter methods.
 local ThemeArtFiles = {
-    ["Christmas"] = "kz-christmas-cabin-v1.jpg",
+    ["Halloween"] = "kz-halloween-ghosts-v1.jpg",
     ["KZ Scripts"] = "kz-anime-night.jpg",
     ["Hello Kitty"] = "pastel-cat.jpg",
     ["Cherry Blossom"] = "cherry-blossom-dusk.jpg",
 }
-local LoaderArtFile = themeName == "Christmas" and ThemeArtFiles["Christmas"] or "kz-loader-night.jpg"
+local LoaderArtFile = "kz-loader-night.jpg"
 
 -- Public GitHub asset source. Missing artwork is downloaded once and then
 -- reused from the executor cache on later launches.
@@ -549,7 +537,7 @@ local function ResolveLoaderArt()
             if ok and type(asset) == "string" and asset ~= "" then return asset end
         end
     end
-    return ResolveThemeArt(themeName)
+    return ResolveThemeArt("KZ Scripts")
 end
 
 
@@ -579,9 +567,8 @@ local function UpdateThemeArt(theme, animate)
         task.delay(animate and 0.2 or 0, function()
             if not Artwork.Parent then return end
             Artwork.Image = asset
-            local transparency = theme == "Christmas" and 0.35 or 0.62
-            Artwork.ImageTransparency = animate and 1 or transparency
-            if animate then Tween(Artwork, 0.55, {ImageTransparency = transparency}, Enum.EasingStyle.Quint) end
+            Artwork.ImageTransparency = animate and 1 or 0.62
+            if animate then Tween(Artwork, 0.55, {ImageTransparency = 0.62}, Enum.EasingStyle.Quint) end
         end)
     else
         Artwork.Image = ""
@@ -602,88 +589,6 @@ local __KZ_BackgroundMotion = {
     Generation = 0,
     Started = false,
 }
-
--- Christmas uses code-drawn snow and lights, so no particle downloads are needed.
-function __KZ_BackgroundMotion.Christmas(host, zIndex, visible)
-    local layer = New("Frame", {
-        Parent = host, Name = "ChristmasMotion", Size = UDim2.fromScale(1, 1),
-        BackgroundTransparency = 1, BorderSizePixel = 0, ClipsDescendants = true,
-        Active = false, ZIndex = zIndex,
-    })
-    local flakes, lights = {}, {}
-    for index = 1, 24 do
-        local size = 1.8 + (index % 5) * 0.65
-        local node = New("Frame", {
-            Parent = layer, Name = "Snow", AnchorPoint = Vector2.new(0.5, 0.5),
-            Size = UDim2.fromOffset(size, size), BackgroundColor3 = Color3.fromRGB(255, 248, 237),
-            BackgroundTransparency = 1, BorderSizePixel = 0, Active = false, ZIndex = zIndex,
-        })
-        Corner(node, 999)
-        flakes[index] = {
-            Node = node, X = (index * 0.4187) % 1, Y = (index * 0.173) % 1.24,
-            Speed = 1.24 / (12 + (index % 8) * 1.4), Phase = index * 1.7,
-            Opacity = 0.25 + (index % 4) * 0.12,
-        }
-    end
-    for index, position in ipairs({
-        {0.92, 0.24}, {0.94, 0.32}, {0.89, 0.38}, {0.96, 0.44},
-        {0.87, 0.50}, {0.93, 0.55}, {0.98, 0.61}, {0.86, 0.65},
-        {0.94, 0.70}, {0.90, 0.79}, {0.17, 0.58}, {0.15, 0.65}, {0.23, 0.67},
-    }) do
-        local node = New("TextLabel", {
-            Parent = layer, Name = "WarmTwinkle", AnchorPoint = Vector2.new(0.5, 0.5),
-            Position = UDim2.fromScale(position[1], position[2]), Size = UDim2.fromOffset(12, 12),
-            BackgroundTransparency = 1, BorderSizePixel = 0, Text = "✦", Font = Enum.Font.Gotham,
-            TextSize = 10, TextColor3 = Color3.fromRGB(255, 225, 161), TextTransparency = 0.8,
-            TextStrokeColor3 = Color3.fromRGB(255, 214, 117), TextStrokeTransparency = 0.9,
-            Active = false, ZIndex = zIndex,
-        })
-        lights[index] = {Node = node, Phase = index * 0.75, Speed = 1 / (2.2 + (index % 4) * 0.8)}
-    end
-    local connection, stopped, accumulator, clock = nil, false, 0, 0
-    local function stop()
-        if stopped then return end
-        stopped = true
-        if connection then
-            connection:Disconnect()
-            local index = table.find(connections, connection)
-            if index then table.remove(connections, index) end
-        end
-        if layer.Parent then layer:Destroy() end
-        table.clear(flakes)
-        table.clear(lights)
-    end
-    local function update(dt)
-        clock += dt
-        for _, flake in ipairs(flakes) do
-            flake.Y = (flake.Y + dt * flake.Speed) % 1.24
-            local y = flake.Y - 0.12
-            local fade = math.min(math.clamp((y + 0.08) / 0.18, 0, 1), math.clamp((1.08 - y) / 0.18, 0, 1))
-            flake.Node.Position = UDim2.fromScale(flake.X + 0.025 * math.sin(clock * 0.55 + flake.Phase), y)
-            flake.Node.BackgroundTransparency = 1 - flake.Opacity * fade
-        end
-        for _, light in ipairs(lights) do
-            local glow = 0.5 + 0.5 * math.sin(clock * light.Speed * math.pi + light.Phase)
-            light.Node.TextTransparency = 0.84 - glow * 0.58
-            light.Node.TextStrokeTransparency = 0.96 - glow * 0.16
-        end
-    end
-    update(0)
-    if __KZ_UI_OPTIONS.ReducedMotion ~= true then
-        connection = RunService.Heartbeat:Connect(function(dt)
-            if destroyed or not host.Parent or not layer.Parent then stop() return end
-            if visible and not visible() then accumulator = 0 return end
-            accumulator += dt
-            if accumulator < 1 / 30 then return end
-            local step = math.min(accumulator, 0.1)
-            accumulator = 0
-            update(step)
-        end)
-        table.insert(connections, connection)
-    end
-    return stop
-end
-
 
 function __KZ_BackgroundMotion.Style()
     if themeName == "Cherry Blossom" then
@@ -710,10 +615,6 @@ function __KZ_BackgroundMotion.Style()
 end
 
 function __KZ_BackgroundMotion.Clear()
-    if __KZ_BackgroundMotion.StopChristmas then
-        __KZ_BackgroundMotion.StopChristmas()
-        __KZ_BackgroundMotion.StopChristmas = nil
-    end
     __KZ_BackgroundMotion.Generation = __KZ_BackgroundMotion.Generation + 1
     for index = #__KZ_BackgroundMotion.Objects, 1, -1 do
         local particle = __KZ_BackgroundMotion.Objects[index]
@@ -725,13 +626,6 @@ end
 function __KZ_BackgroundMotion.Build()
     __KZ_BackgroundMotion.Clear()
     if not __KZ_BackgroundMotion.Layer or not __KZ_BackgroundMotion.Layer.Parent then return end
-
-    if themeName == "Christmas" then
-        __KZ_BackgroundMotion.StopChristmas = __KZ_BackgroundMotion.Christmas(__KZ_BackgroundMotion.Layer, 4, function()
-            return Window.Visible and Window.GroupTransparency < 0.99
-        end)
-        return
-    end
 
     local style = __KZ_BackgroundMotion.Style()
     local asset = ResolveBackgroundMotionAsset(style.File)
@@ -2228,7 +2122,6 @@ local function Dropdown(page, parentCard, label, options, default, onChanged)
     end)
     local function SetSelected(value, fire)
         if value == nil then return end
-        if label == "UI Theme" and value == "Halloween" then value = "Christmas" end
         selected = value
         box.Text = tostring(value)
         if fire and onChanged then
@@ -3287,14 +3180,8 @@ end)
 -- Sync picker colors
 local AccentSyncPickers = {}
 
-ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"KZ Scripts", "Hello Kitty", "Cherry Blossom", "Christmas"}, themeName, function(value)
+ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"KZ Scripts", "Hello Kitty", "Cherry Blossom", "Halloween"}, themeName, function(value)
     local selectedTheme = Themes[value] and value or "KZ Scripts"
-    pcall(function()
-        if type(writefile) == "function" then
-            EnsureAssetFolders()
-            writefile(ASSET_ROOT .. "/ThemePreference-v1.txt", selectedTheme)
-        end
-    end)
     if selectedTheme == themeName then return end
     __KZ_QOL.PlayThemeTransition(function()
         themeName = selectedTheme
@@ -3892,7 +3779,6 @@ function __KZ_WindowMethods:Notify(title,text,duration) return Toast(title,text,
 function __KZ_WindowMethods:Unload()
     if destroyed then return end
     destroyed = true
-    __KZ_BackgroundMotion.Clear()
     for _, hook in ipairs(__KZ_UnloadHooks) do pcall(hook) end
     pcall(function() UserInputService.MouseIconEnabled = true end)
     pcall(function() if cursorGui and cursorGui.Parent then cursorGui:Destroy() end end)
@@ -4305,7 +4191,6 @@ local function __KZ_PlayLoadAnimation()
         Parent = Intro, Size = UDim2.fromScale(1, 1), BackgroundColor3 = T.MainBG,
         BackgroundTransparency = 0.70, BorderSizePixel = 0, ZIndex = 1001,
     })
-    local stopChristmas = themeName == "Christmas" and __KZ_BackgroundMotion.Christmas(Intro, 1001)
     local loaderPanel = New("Frame", {
         Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.77), Size = UDim2.fromOffset(460, 126),
@@ -4422,8 +4307,8 @@ local function __KZ_PlayLoadAnimation()
     local loaderEyebrow = New("TextLabel", {
         Parent = Intro, AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.29), Size = UDim2.fromOffset(300, 18),
-        BackgroundTransparency = 1, Text = themeName == "Christmas" and "CHRISTMAS  /  KZ SCRIPTS" or "UNIVERSAL UI  /  THEMED SHELL",
-        Font = Enum.Font.GothamMedium, TextSize = 8, TextColor3 = themeName == "Christmas" and T.Accent2 or T.Accent3,
+        BackgroundTransparency = 1, Text = "UNIVERSAL UI  /  THEMED SHELL",
+        Font = Enum.Font.GothamMedium, TextSize = 8, TextColor3 = T.Accent3,
         TextTransparency = 1, ZIndex = 1003,
     })
 
@@ -4544,7 +4429,6 @@ local function __KZ_PlayLoadAnimation()
         Tween(Intro, 0.82, {GroupTransparency = 1}, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
         Tween(introScale, 0.82, {Scale = targetScale * 1.018}, Enum.EasingStyle.Quint)
         task.wait(0.85)
-        if stopChristmas then stopChristmas() end
         if introMoveConnection then introMoveConnection:Disconnect() end
         if sidebarRevealMask and sidebarRevealMask.Parent then sidebarRevealMask:Destroy() end
         if contentRevealMask and contentRevealMask.Parent then contentRevealMask:Destroy() end
@@ -4628,4 +4512,3 @@ KZAdapter.__KZ_UI_API = {
 KZAdapter.__KZ_UI_API.CreateWindow = function(_) return __KZ_Window end
 return KZAdapter.__KZ_UI_API
 end
-
