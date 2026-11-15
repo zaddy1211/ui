@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "icons": "node render-lucide-icons.cjs",
+    "fetch-icons": "node fetch-lucide-icons.cjs"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2"
+  }
+}

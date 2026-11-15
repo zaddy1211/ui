@@ -36,9 +36,9 @@ local count = #writes; ensureTree(); assert(#writes == count, "migration repeate
 print("PASS config migration, autoload, non-overwrite, legacy read-only boundary and idempotency")
 local __KZ_Cozy = {}
 local Themes = {}
-for _, name in ipairs({"Soft Kitty","Rosy Cloud","Moonlit Mochi","Winter Bow","Rose Tea","Starry Bow","Matcha Mochi","Sugar Frost","Cream Paw"}) do Themes[name] = {} end
+for _, name in ipairs({"Soft Kitty","Moonlit Mochi"}) do Themes[name] = {} end
 -- INSERT THEME NORMALIZER
-for old, new in pairs({["KZ Scripts"]="Soft Kitty",["Hello Kitty"]="Rosy Cloud",["Cherry Blossom"]="Moonlit Mochi",Halloween="Winter Bow",Christmas="Winter Bow",Midnight="Starry Bow",Redline="Rose Tea",Emerald="Matcha Mochi",Frost="Sugar Frost",Monochrome="Cream Paw"}) do assert(__KZ_Cozy.ThemeName(old) == new) end
+for old, new in pairs({["KZ Scripts"]="Soft Kitty",["Hello Kitty"]="Soft Kitty",["Cherry Blossom"]="Moonlit Mochi",Halloween="Soft Kitty",Christmas="Soft Kitty",Midnight="Moonlit Mochi",Redline="Soft Kitty",Emerald="Soft Kitty",Frost="Soft Kitty",Monochrome="Soft Kitty",["Rosy Cloud"]="Soft Kitty",["Winter Bow"]="Soft Kitty",["Rose Tea"]="Soft Kitty",["Starry Bow"]="Soft Kitty",["Matcha Mochi"]="Soft Kitty",["Sugar Frost"]="Soft Kitty",["Cream Paw"]="Soft Kitty"}) do assert(__KZ_Cozy.ThemeName(old) == new) end
 for name in pairs(Themes) do assert(__KZ_Cozy.ThemeName(name) == name) end
 assert(__KZ_Cozy.ThemeName(nil) == "Soft Kitty" and __KZ_Cozy.ThemeName("unknown") == "Soft Kitty")
 print("PASS legacy theme migration, new palettes and invalid preference fallback")

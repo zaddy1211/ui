@@ -23,15 +23,22 @@ assert(!/kz-[\w-]+\.(png|jpg)/i.test(source),'legacy artwork returned');
 assert(!/Text = "KZ|KZ Scripts  [|/]/.test(source),'legacy visible branding returned');
 assert(source.includes('Scale.Scale = targetScale * (c.Reduced and 1 or .22)'));
 assert(!source.includes('SpeechBubble')&&!source.includes('quick-love-v1'),'old talking loader or downloaded font override returned');
+assert(source.includes('BackgroundColor3 = T.MainBG, BackgroundTransparency = .96,'),'global cream wash obscures the cat');
+assert(source.includes('ArtworkVignette.BackgroundTransparency = .98'),'dark wash obscures the artwork');
 assert(!source.includes('CornerRadius = UDim.new(1, 0)})\n__KZ_Cozy.OpenLogo'),'round mask returned on the cat silhouette');
 assert(!slice('function __KZ_BackgroundMotion.Build()','function __KZ_BackgroundMotion.Start()').includes('while not destroyed'),'background particle loop returned');
-for(const file of ['mochi-logo-v1.png','mochi-mark-v2.png','mochi-dreamscape-v1.png','mochi-paw-v1.png','mochi-icons-v1.png']) {
+for(const file of ['mochi-logo-v1.png','mochi-mark-v2.png','mochi-dreamscape-v1.png','mochi-paw-v2.png','mochi-lucide-v2.png']) {
   const png=fs.readFileSync(path.join(root,'assets',file));
   assert(png.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'invalid PNG '+file);
   assert(png.readUInt32BE(16)>0&&png.readUInt32BE(20)>0);
 }
 for(const match of source.matchAll(/(?:File = |Asset\(|DownloadThemeArt\(|= )"(mochi-[\w-]+\.png)"/g))
   assert(fs.existsSync(path.join(root,'assets',match[1])),'missing referenced asset '+match[1]);
+const lucide=JSON.parse(fs.readFileSync(path.join(root,'assets/icons/lucide/manifest.json'),'utf8'));
+for(const name of Object.values(lucide.icons)) assert(fs.readFileSync(path.join(root,'assets/icons/lucide',name+'.svg'),'utf8').includes('<svg'),'missing SVG source '+name);
+assert(fs.readFileSync(path.join(root,'assets/icons/lucide/LICENSE'),'utf8').includes('ISC License'),'missing icon license');
+const atlas=fs.readFileSync(path.join(root,'assets/mochi-lucide-v2.png'));
+assert(atlas.readUInt32BE(16)===512&&atlas.readUInt32BE(20)===256,'icon atlas cell layout differs');
 console.log('PASS entry aliases, '+fields.length+' inherited API fields, dimensions, branding boundaries, five PNG assets and static decorations');
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'mochi-tests-'));
 try {
@@ -58,7 +65,14 @@ try {
   fs.writeFileSync(typographyBundle,fs.readFileSync(path.join(__dirname,'intro-harness.luau'),'utf8')+'\n'+
     fs.readFileSync(path.join(__dirname,'typography-cases.luau'),'utf8')
       .replace('-- INSERT NATIVE TYPOGRAPHY',slice('-- UI-local native typography;','local function New(')));
-  for(const file of [bundle,configBundle,motionBundle,typographyBundle]) {
+  const visualBundle=path.join(temp,'visuals.luau');
+  fs.writeFileSync(visualBundle,fs.readFileSync(path.join(__dirname,'intro-harness.luau'),'utf8')+'\n'+
+    fs.readFileSync(path.join(__dirname,'visual-cases.luau'),'utf8')
+      .replace('-- INSERT PALETTES',slice('local ICONS = {','\ndo\n    local c = __KZ_Cozy'))
+      .replace('-- INSERT ICON ALIASES',slice('local __KZ_IconAliases = {','local function __KZ_UpdateNavSelectionGlow'))
+      .replace('-- INSERT TAB ICON RESOLVER',slice('function __KZ_Cozy.ResolveTabIcon(name, icon)','local function __KZ_AddNav'))
+      .replace('-- INSERT ICON CELLS',slice('__KZ_Cozy.NavIcons, __KZ_Cozy.IconLookup = {}, {}','__KZ_AddNav("Home"')));
+  for(const file of [bundle,configBundle,motionBundle,typographyBundle,visualBundle]) {
     const run=cp.spawnSync(process.env.LUAU_BIN||'luau',[file],{encoding:'utf8'});
     process.stdout.write(run.stdout||''); process.stderr.write(run.stderr||'');
     if(run.error) throw run.error;

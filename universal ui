@@ -152,89 +152,24 @@ local Themes = {
         TextMain = Color3.fromRGB(33, 27, 35), TextSub = Color3.fromRGB(112, 70, 91),
         Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(255, 228, 240),
         Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
-    },
-    ["Rosy Cloud"] = {
-        MainBG = Color3.fromRGB(255, 239, 247), SidebarBG = Color3.fromRGB(251, 210, 231),
-        TopbarBG = Color3.fromRGB(255, 230, 242), SectionBG = Color3.fromRGB(255, 230, 242),
-        SectionHeaderBG = Color3.fromRGB(251, 210, 231), ElementBG = Color3.fromRGB(255, 230, 242),
-        ElementHoverBG = Color3.fromRGB(248, 187, 213), Accent = Color3.fromRGB(215, 112, 160),
-        TextMain = Color3.fromRGB(33, 27, 35), TextSub = Color3.fromRGB(112, 70, 91),
-        Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(251, 210, 231),
-        Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
+        GlassTransparency = .72, RowTransparency = .88, ArtTransparency = .02,
     },
     ["Moonlit Mochi"] = {
         MainBG = Color3.fromRGB(33, 27, 35), SidebarBG = Color3.fromRGB(43, 33, 44),
         TopbarBG = Color3.fromRGB(54, 39, 53), SectionBG = Color3.fromRGB(54, 39, 53),
         SectionHeaderBG = Color3.fromRGB(43, 33, 44), ElementBG = Color3.fromRGB(54, 39, 53),
-        ElementHoverBG = Color3.fromRGB(248, 187, 213), Accent = Color3.fromRGB(232, 140, 183),
+        ElementHoverBG = Color3.fromRGB(73, 46, 66), Accent = Color3.fromRGB(232, 140, 183),
         TextMain = Color3.fromRGB(255, 248, 252), TextSub = Color3.fromRGB(224, 178, 203),
         Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(43, 33, 44),
         Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
-    },
-    ["Winter Bow"] = {
-        MainBG = Color3.fromRGB(255, 248, 252), SidebarBG = Color3.fromRGB(255, 228, 240),
-        TopbarBG = Color3.fromRGB(255, 244, 249), SectionBG = Color3.fromRGB(255, 244, 249),
-        SectionHeaderBG = Color3.fromRGB(255, 228, 240), ElementBG = Color3.fromRGB(255, 244, 249),
-        ElementHoverBG = Color3.fromRGB(248, 187, 213), Accent = Color3.fromRGB(232, 140, 183),
-        TextMain = Color3.fromRGB(33, 27, 35), TextSub = Color3.fromRGB(112, 70, 91),
-        Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(255, 228, 240),
-        Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
-    },
-    ["Rose Tea"] = {
-        MainBG = Color3.fromRGB(255, 239, 247), SidebarBG = Color3.fromRGB(251, 210, 231),
-        TopbarBG = Color3.fromRGB(255, 230, 242), SectionBG = Color3.fromRGB(255, 230, 242),
-        SectionHeaderBG = Color3.fromRGB(251, 210, 231), ElementBG = Color3.fromRGB(255, 230, 242),
-        ElementHoverBG = Color3.fromRGB(248, 187, 213), Accent = Color3.fromRGB(215, 112, 160),
-        TextMain = Color3.fromRGB(33, 27, 35), TextSub = Color3.fromRGB(112, 70, 91),
-        Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(251, 210, 231),
-        Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
-    },
-    ["Starry Bow"] = {
-        MainBG = Color3.fromRGB(255, 248, 252), SidebarBG = Color3.fromRGB(255, 228, 240),
-        TopbarBG = Color3.fromRGB(255, 244, 249), SectionBG = Color3.fromRGB(255, 244, 249),
-        SectionHeaderBG = Color3.fromRGB(255, 228, 240), ElementBG = Color3.fromRGB(255, 244, 249),
-        ElementHoverBG = Color3.fromRGB(248, 187, 213), Accent = Color3.fromRGB(232, 140, 183),
-        TextMain = Color3.fromRGB(33, 27, 35), TextSub = Color3.fromRGB(112, 70, 91),
-        Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(255, 228, 240),
-        Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
-    },
-    ["Matcha Mochi"] = {
-        MainBG = Color3.fromRGB(255, 248, 252), SidebarBG = Color3.fromRGB(255, 228, 240),
-        TopbarBG = Color3.fromRGB(255, 244, 249), SectionBG = Color3.fromRGB(255, 244, 249),
-        SectionHeaderBG = Color3.fromRGB(255, 228, 240), ElementBG = Color3.fromRGB(255, 244, 249),
-        ElementHoverBG = Color3.fromRGB(248, 187, 213), Accent = Color3.fromRGB(232, 140, 183),
-        TextMain = Color3.fromRGB(33, 27, 35), TextSub = Color3.fromRGB(112, 70, 91),
-        Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(255, 228, 240),
-        Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
-    },
-    ["Sugar Frost"] = {
-        MainBG = Color3.fromRGB(255, 248, 252), SidebarBG = Color3.fromRGB(255, 228, 240),
-        TopbarBG = Color3.fromRGB(255, 244, 249), SectionBG = Color3.fromRGB(255, 244, 249),
-        SectionHeaderBG = Color3.fromRGB(255, 228, 240), ElementBG = Color3.fromRGB(255, 244, 249),
-        ElementHoverBG = Color3.fromRGB(248, 187, 213), Accent = Color3.fromRGB(232, 140, 183),
-        TextMain = Color3.fromRGB(33, 27, 35), TextSub = Color3.fromRGB(112, 70, 91),
-        Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(255, 228, 240),
-        Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
-    },
-    ["Cream Paw"] = {
-        MainBG = Color3.fromRGB(255, 248, 252), SidebarBG = Color3.fromRGB(255, 228, 240),
-        TopbarBG = Color3.fromRGB(255, 244, 249), SectionBG = Color3.fromRGB(255, 244, 249),
-        SectionHeaderBG = Color3.fromRGB(255, 228, 240), ElementBG = Color3.fromRGB(255, 244, 249),
-        ElementHoverBG = Color3.fromRGB(248, 187, 213), Accent = Color3.fromRGB(232, 140, 183),
-        TextMain = Color3.fromRGB(33, 27, 35), TextSub = Color3.fromRGB(112, 70, 91),
-        Border = Color3.fromRGB(232, 140, 183), ControlBG = Color3.fromRGB(255, 228, 240),
-        Accent2 = Color3.fromRGB(248, 187, 213), Accent3 = Color3.fromRGB(190, 91, 137),
+        GlassTransparency = .32, RowTransparency = .62, ArtTransparency = .12,
     },
 }
 
--- Old configuration values are accepted but never shown in the interface.
+-- Retired choices migrate to a real, visually distinct theme.
 function __KZ_Cozy.ThemeName(value)
-    local aliases = {
-        ["KZ Scripts"] = "Soft Kitty", ["Mochi Hub"] = "Soft Kitty", ["Hello Kitty"] = "Rosy Cloud",
-        ["Cherry Blossom"] = "Moonlit Mochi", Christmas = "Winter Bow", Halloween = "Winter Bow",
-        Redline = "Rose Tea", Midnight = "Starry Bow", Emerald = "Matcha Mochi", Frost = "Sugar Frost", Monochrome = "Cream Paw",
-    }
-    return aliases[value] or (Themes[value] and value) or "Soft Kitty"
+    if value == "Moonlit Mochi" or value == "Cherry Blossom" or value == "Midnight" then return "Moonlit Mochi" end
+    return "Soft Kitty"
 end
 
 do
@@ -299,8 +234,8 @@ pcall(function()
     getgenv().__kzQBAccent2 = T.Accent2
     getgenv().__kzQBAccent3 = T.Accent3
     if not getgenv().__kzQBBeamCustom then getgenv().__kzQBBeamColor = T.Accent end
-    getgenv().__kzQBCardDecals = (themeName == "Rosy Cloud") and nil or nil
-    getgenv().__kzQBCardStyle = (themeName == "Rosy Cloud") and {
+    getgenv().__kzQBCardDecals = (themeName == "Soft Kitty") and nil or nil
+    getgenv().__kzQBCardStyle = (themeName == "Soft Kitty") and {
         bg1 = Color3.fromRGB(255, 240, 246), bg2 = Color3.fromRGB(255, 224, 236),
         label = Color3.fromRGB(179, 110, 140), value = Color3.fromRGB(97, 42, 68),
     } or nil
@@ -560,12 +495,12 @@ end)
 local Artwork = New("ImageLabel", {
     Parent = Window, Name = "ThemeArtwork", Size = UDim2.new(1, 42, 1, 42),
     Position = UDim2.fromOffset(-21, -21), BackgroundTransparency = 1,
-    ImageTransparency = 0.12, ScaleType = Enum.ScaleType.Crop,
+    ImageTransparency = T.ArtTransparency, ScaleType = Enum.ScaleType.Crop,
     ImageColor3 = Color3.fromRGB(255, 255, 255), ZIndex = 1,
 })
 local ArtworkShade = New("Frame", {
     Parent = Window, Name = "ArtworkShade", Size = UDim2.fromScale(1, 1),
-    BackgroundColor3 = T.MainBG, BackgroundTransparency = 0.3,
+    BackgroundColor3 = T.MainBG, BackgroundTransparency = .96,
     BorderSizePixel = 0, ZIndex = 2,
 })
 local ArtworkVignette = New("Frame", {
@@ -633,19 +568,22 @@ local function UpdateThemeArt(theme, animate)
     local asset = ResolveThemeArt(theme)
     if destroyed or generation ~= __KZ_Cozy.ArtGeneration then return end
     if asset then
-        if animate then Tween(Artwork, 0.24, {ImageTransparency = 1}, Enum.EasingStyle.Sine) end
-        task.delay(animate and 0.2 or 0, function()
-            if not Artwork.Parent or generation ~= __KZ_Cozy.ArtGeneration then return end
-            Artwork.Image = asset
-            local transparency = theme == "Moonlit Mochi" and .64 or .4
-            Artwork.ImageTransparency = animate and 1 or transparency
-            if animate then Tween(Artwork, 0.55, {ImageTransparency = transparency}, Enum.EasingStyle.Quint) end
-        end)
-    else
-        Artwork.Image = ""
-    end
+        local transparency = T.ArtTransparency
+        if Artwork.Image == asset then
+            if animate then Tween(Artwork, .28, {ImageTransparency = transparency}, Enum.EasingStyle.Sine)
+            else Artwork.ImageTransparency = transparency end
+        else
+            if animate then Tween(Artwork, .16, {ImageTransparency = 1}, Enum.EasingStyle.Sine) end
+            task.delay(animate and .16 or 0, function()
+                if not Artwork.Parent or generation ~= __KZ_Cozy.ArtGeneration then return end
+                Artwork.Image = asset
+                Artwork.ImageTransparency = animate and 1 or transparency
+                if animate then Tween(Artwork, .28, {ImageTransparency = transparency}, Enum.EasingStyle.Sine) end
+            end)
+        end
+    else Artwork.Image = "" end
     ArtworkShade.BackgroundColor3 = T.MainBG
-    ArtworkVignette.BackgroundTransparency = theme == "Moonlit Mochi" and 0.88 or 0.98
+    ArtworkVignette.BackgroundTransparency = .98
 end
 
 function __KZ_Cozy.ResolveLogo(theme)
@@ -659,86 +597,6 @@ function __KZ_Cozy.Asset(file)
     return (destination and ResolveCustomAsset(destination)) or ""
 end
 
--- Christmas uses code-drawn snow and lights, so no particle downloads are needed.
-function __KZ_Cozy.Christmas(host, zIndex, visible)
-    local layer = New("Frame", {
-        Parent = host, Name = "ChristmasMotion", Size = UDim2.fromScale(1, 1),
-        BackgroundTransparency = 1, BorderSizePixel = 0, ClipsDescendants = true,
-        Active = false, ZIndex = zIndex,
-    })
-    local flakes, lights = {}, {}
-    for index = 1, 24 do
-        local size = 1.8 + (index % 5) * 0.65
-        local node = New("Frame", {
-            Parent = layer, Name = "Snow", AnchorPoint = Vector2.new(0.5, 0.5),
-            Size = UDim2.fromOffset(size, size), BackgroundColor3 = Color3.fromRGB(255, 248, 237),
-            BackgroundTransparency = 1, BorderSizePixel = 0, Active = false, ZIndex = zIndex,
-        })
-        Corner(node, 999)
-        flakes[index] = {
-            Node = node, X = (index * 0.4187) % 1, Y = (index * 0.173) % 1.24,
-            Speed = 1.24 / (12 + (index % 8) * 1.4), Phase = index * 1.7,
-            Opacity = 0.25 + (index % 4) * 0.12,
-        }
-    end
-    for index, position in ipairs({
-        {0.92, 0.24}, {0.94, 0.32}, {0.89, 0.38}, {0.96, 0.44},
-        {0.87, 0.50}, {0.93, 0.55}, {0.98, 0.61}, {0.86, 0.65},
-        {0.94, 0.70}, {0.90, 0.79}, {0.17, 0.58}, {0.15, 0.65}, {0.23, 0.67},
-    }) do
-        local node = New("TextLabel", {
-            Parent = layer, Name = "WarmTwinkle", AnchorPoint = Vector2.new(0.5, 0.5),
-            Position = UDim2.fromScale(position[1], position[2]), Size = UDim2.fromOffset(12, 12),
-            BackgroundTransparency = 1, BorderSizePixel = 0, Text = "✦", Font = Enum.Font.Gotham,
-            TextSize = 10, TextColor3 = Color3.fromRGB(255, 225, 161), TextTransparency = 0.8,
-            TextStrokeColor3 = Color3.fromRGB(255, 214, 117), TextStrokeTransparency = 0.9,
-            Active = false, ZIndex = zIndex,
-        })
-        lights[index] = {Node = node, Phase = index * 0.75, Speed = 1 / (2.2 + (index % 4) * 0.8)}
-    end
-    local connection, stopped, accumulator, clock = nil, false, 0, 0
-    local function stop()
-        if stopped then return end
-        stopped = true
-        if connection then
-            connection:Disconnect()
-            local index = table.find(connections, connection)
-            if index then table.remove(connections, index) end
-        end
-        if layer.Parent then layer:Destroy() end
-        table.clear(flakes)
-        table.clear(lights)
-    end
-    local function update(dt)
-        clock += dt
-        for _, flake in ipairs(flakes) do
-            flake.Y = (flake.Y + dt * flake.Speed) % 1.24
-            local y = flake.Y - 0.12
-            local fade = math.min(math.clamp((y + 0.08) / 0.18, 0, 1), math.clamp((1.08 - y) / 0.18, 0, 1))
-            flake.Node.Position = UDim2.fromScale(flake.X + 0.025 * math.sin(clock * 0.55 + flake.Phase), y)
-            flake.Node.BackgroundTransparency = 1 - flake.Opacity * fade
-        end
-        for _, light in ipairs(lights) do
-            local glow = 0.5 + 0.5 * math.sin(clock * light.Speed * math.pi + light.Phase)
-            light.Node.TextTransparency = 0.84 - glow * 0.58
-            light.Node.TextStrokeTransparency = 0.96 - glow * 0.16
-        end
-    end
-    update(0)
-    if not __KZ_Cozy.Reduced then
-        connection = RunService.Heartbeat:Connect(function(dt)
-            if destroyed or not host.Parent or not layer.Parent then stop() return end
-            if visible and not visible() then accumulator = 0 return end
-            accumulator += dt
-            if accumulator < 1 / 30 then return end
-            local step = math.min(accumulator, 0.1)
-            accumulator = 0
-            update(step)
-        end)
-        table.insert(connections, connection)
-    end
-    return stop
-end
 
 
 -- Mochi loading host. A standalone wordmark opens into the existing window.
@@ -1006,15 +864,11 @@ local __KZ_BackgroundMotion = {
 }
 
 function __KZ_BackgroundMotion.Style()
-    return {File = "mochi-paw-v1.png", Count = 3, Speed = .002, Sway = .015,
+    return {File = "mochi-paw-v2.png", Count = 3, Speed = .002, Sway = .015,
         MinSize = 16, MaxSize = 22, Opacity = .14, Interval = .12}
 end
 
 function __KZ_BackgroundMotion.Clear()
-    if __KZ_BackgroundMotion.StopChristmas then
-        __KZ_BackgroundMotion.StopChristmas()
-        __KZ_BackgroundMotion.StopChristmas = nil
-    end
     __KZ_BackgroundMotion.Generation = __KZ_BackgroundMotion.Generation + 1
     for index = #__KZ_BackgroundMotion.Objects, 1, -1 do
         local particle = __KZ_BackgroundMotion.Objects[index]
@@ -1028,12 +882,6 @@ function __KZ_BackgroundMotion.Build()
     if __KZ_Cozy.Reduced then return end
     if not __KZ_BackgroundMotion.Layer or not __KZ_BackgroundMotion.Layer.Parent then return end
 
-    if themeName == "Winter Bow" then
-        __KZ_BackgroundMotion.StopChristmas = __KZ_Cozy.Christmas(__KZ_BackgroundMotion.Layer, 4, function()
-            return Window.Visible and Window.GroupTransparency < 0.99 and not __KZ_Cozy.Active
-        end)
-        return
-    end
 
     local style = __KZ_BackgroundMotion.Style()
     local asset = ResolveBackgroundMotionAsset(style.File)
@@ -1295,7 +1143,7 @@ end
 
 local Topbar = New("Frame", {
     Parent = Content, Size = UDim2.new(1, 0, 0, 72), BackgroundColor3 = T.TopbarBG,
-    BackgroundTransparency = .12, BorderSizePixel = 0, ZIndex = 10,
+    BackgroundTransparency = T.GlassTransparency, BorderSizePixel = 0, ZIndex = 10,
     Active = true,
 })
 local topLine = New("Frame", {
@@ -1487,12 +1335,12 @@ __KZ_QOL.PlayThemeTransition = function(applyTheme)
     local generation = __KZ_QOL.ThemeGeneration
     __KZ_QOL.ThemeTransitionOverlay.Visible = true
     __KZ_QOL.ThemeTransitionOverlay.BackgroundTransparency = 1
-    Tween(__KZ_QOL.ThemeTransitionOverlay, 0.16, {BackgroundTransparency = 0.84}, Enum.EasingStyle.Sine)
+    Tween(__KZ_QOL.ThemeTransitionOverlay, 0.12, {BackgroundTransparency = 0.94}, Enum.EasingStyle.Sine)
     task.delay(0.12, function()
         if destroyed or generation ~= __KZ_QOL.ThemeGeneration then return end
         if type(applyTheme) == "function" then pcall(applyTheme) end
         if destroyed or generation ~= __KZ_QOL.ThemeGeneration then return end
-        Tween(__KZ_QOL.ThemeTransitionOverlay, 0.5, {BackgroundTransparency = 1}, Enum.EasingStyle.Quint)
+        Tween(__KZ_QOL.ThemeTransitionOverlay, 0.28, {BackgroundTransparency = 1}, Enum.EasingStyle.Quint)
         task.delay(0.52, function()
             if generation == __KZ_QOL.ThemeGeneration and __KZ_QOL.ThemeTransitionOverlay.Parent then
                 __KZ_QOL.ThemeTransitionOverlay.Visible = false
@@ -1940,10 +1788,9 @@ local function Section(page, title, subtitle, widthScale)
     local card = New("Frame", {
         Parent = page.Body, Size = UDim2.new(widthScale or 1, 0, 0, 0),
         AutomaticSize = Enum.AutomaticSize.Y, BackgroundColor3 = T.SectionBG,
-        BackgroundTransparency = 0.06,
+        BackgroundTransparency = T.GlassTransparency,
     })
     Corner(card, 14)
-    local cardScale = New("UIScale", {Parent = card, Scale = 1})
     Gradient(card, {
         function(t) return Mix(t.SectionBG, t.Accent3, 0.10) end,
         "SectionBG",
@@ -1961,12 +1808,10 @@ local function Section(page, title, subtitle, widthScale)
     })
     New("UIListLayout", {Parent = card, Padding = UDim.new(0, 9), SortOrder = Enum.SortOrder.LayoutOrder})
     card.MouseEnter:Connect(function()
-        Tween(card, 0.18, {BackgroundTransparency = 0.035}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-        Tween(cardScale, 0.18, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(card, 0.18, {BackgroundTransparency = math.max(.2, T.GlassTransparency - .025)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     end)
     card.MouseLeave:Connect(function()
-        Tween(card, 0.2, {BackgroundTransparency = 0.06}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-        Tween(cardScale, 0.2, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        Tween(card, 0.2, {BackgroundTransparency = T.GlassTransparency}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     end)
     local heading = New("Frame", {
         Parent = card, Size = UDim2.new(1, 0, 0, subtitle and 42 or 25), BackgroundTransparency = 1,
@@ -2018,7 +1863,7 @@ local function Section(page, title, subtitle, widthScale)
     end)
     BindTheme(function()
         if card.Parent then
-            card.BackgroundColor3 = T.SectionBG; accent.BackgroundColor3 = T.Accent
+            card.BackgroundColor3 = T.SectionBG; card.BackgroundTransparency = T.GlassTransparency; accent.BackgroundColor3 = T.Accent
             titleLabel.TextColor3 = T.TextMain
             if subLabel then subLabel.TextColor3 = T.TextSub end
             resetButton.BackgroundColor3 = T.ControlBG
@@ -2040,7 +1885,7 @@ end
 local function ElementBase(page, parent, label, height)
     local row = New("Frame", {
         Parent = parent, Size = UDim2.new(1, 0, 0, height or 44),
-        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.18,
+        BackgroundColor3 = T.ElementBG, BackgroundTransparency = T.RowTransparency,
     })
     Corner(row, 10)
     local rowGlint = New("Frame", {
@@ -2072,13 +1917,13 @@ local function ElementBase(page, parent, label, height)
     table.insert(page.Searchables, searchable)
     if __KZ_QOL.RegisterFavoriteRow then __KZ_QOL.RegisterFavoriteRow(page, label, row, searchable) end
     row.MouseEnter:Connect(function()
-        Tween(row, 0.16, {BackgroundColor3 = T.ElementHoverBG, BackgroundTransparency = 0.28})
+        Tween(row, 0.16, {BackgroundColor3 = T.ElementHoverBG, BackgroundTransparency = math.max(.35, T.RowTransparency - .06)})
         Tween(rowScale, 0.18, {Scale = 1.004}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
         Tween(hoverEdge, 0.18, {BackgroundTransparency = 0.03}, Enum.EasingStyle.Sine)
         Tween(rowGlint, 0.18, {BackgroundTransparency = 0.9}, Enum.EasingStyle.Sine)
     end)
     row.MouseLeave:Connect(function()
-        Tween(row, 0.18, {BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.18})
+        Tween(row, 0.18, {BackgroundColor3 = T.ElementBG, BackgroundTransparency = T.RowTransparency})
         Tween(rowScale, 0.18, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
         Tween(hoverEdge, 0.18, {BackgroundTransparency = 0.72}, Enum.EasingStyle.Sine)
         Tween(rowGlint, 0.18, {BackgroundTransparency = 0.94}, Enum.EasingStyle.Sine)
@@ -2086,6 +1931,7 @@ local function ElementBase(page, parent, label, height)
     BindTheme(function()
         if row.Parent then
             row.BackgroundColor3 = T.ElementBG
+            row.BackgroundTransparency = T.RowTransparency
             rowGlint.BackgroundColor3 = Color3.new(1, 1, 1)
             outline.Color = T.Border
             hoverEdge.BackgroundColor3 = T.Accent
@@ -3608,14 +3454,13 @@ local appearance = Section(Settings, "Appearance")
 -- Sync picker colors
 local AccentSyncPickers = {}
 
-ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"Soft Kitty", "Rosy Cloud", "Moonlit Mochi", "Winter Bow", "Rose Tea", "Starry Bow", "Matcha Mochi", "Sugar Frost", "Cream Paw"}, themeName, function(value)
+ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"Soft Kitty", "Moonlit Mochi"}, themeName, function(value)
     local selectedTheme = __KZ_Cozy.ThemeName(value)
     if selectedTheme == themeName then return end
     __KZ_QOL.PlayThemeTransition(function()
         themeName = selectedTheme
         __KZ_Cozy.Preferences.Theme = selectedTheme
         __KZ_Cozy.SavePreferences()
-        __KZ_Cozy.UpdateLogo(selectedTheme)
         for key in pairs(T) do T[key] = nil end
         for key, paletteValue in pairs(Themes[selectedTheme]) do T[key] = paletteValue end
         pcall(function()
@@ -3624,8 +3469,8 @@ ConfigManager.Register("UI Theme", Dropdown(Settings, appearance, "UI Theme", {"
             getgenv().__kzQBAccent3 = T.Accent3
             getgenv().__kzQBBeamCustom = false
             getgenv().__kzQBBeamColor = T.Accent
-            getgenv().__kzQBCardDecals = (selectedTheme == "Rosy Cloud") and nil or nil
-            getgenv().__kzQBCardStyle = (selectedTheme == "Rosy Cloud") and {
+            getgenv().__kzQBCardDecals = (selectedTheme == "Soft Kitty") and nil or nil
+            getgenv().__kzQBCardStyle = (selectedTheme == "Soft Kitty") and {
                 bg1 = Color3.fromRGB(255, 240, 246), bg2 = Color3.fromRGB(255, 224, 236),
                 label = Color3.fromRGB(179, 110, 140), value = Color3.fromRGB(97, 42, 68),
             } or nil
@@ -3643,7 +3488,7 @@ end))
 
 -- Custom cursor
 local CursorOptions = {"Default", "Mochi Paw"}
-local CURSOR_IMAGE = __KZ_Cozy.Asset("mochi-paw-v1.png")
+local CURSOR_IMAGE = __KZ_Cozy.Asset("mochi-paw-v2.png")
 local CURSOR_SIZE = 24 -- pixels; tweak here if you want it bigger/smaller
 local currentCursor = "Default"
 local cursorGui, cursorDot, cursorConn
@@ -3887,6 +3732,7 @@ __KZ_ApplyTheme = function()
         Sidebar.BackgroundColor3 = T.SidebarBG
         sideLine.BackgroundColor3 = T.Border
         Topbar.BackgroundColor3 = T.TopbarBG
+        Topbar.BackgroundTransparency = T.GlassTransparency
         topLine.BackgroundColor3 = T.Border
         BrandLogoShell.BackgroundColor3 = T.ElementBG
         BrandTitle.TextColor3 = T.TextMain
@@ -4023,6 +3869,34 @@ NavScroll:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
     __KZ_UpdateNavSelectionGlow(false)
 end)
 
+function __KZ_Cozy.ResolveTabIcon(name, icon)
+    local c = __KZ_Cozy
+    local stock
+    for key, asset in pairs(ICONS) do if icon == asset then stock = key; break end end
+    if type(icon) == "string" and icon:match("^rbxasset") and not stock then
+        return icon, Vector2.new(0,0), Vector2.new(0,0)
+    end
+    local function key(value) return tostring(value or ""):lower():gsub("[^%w]", "") end
+    local aliases = {main="Home",status="Home",quarterback="QB",aimbot="QB",aim="QB",target="QB",
+        catch="Catching",catchassist="Catching",autocatch="Catching",kicking="Kicker",kick="Kicker",
+        localplayer="Player",speed="Movement",move="Movement",teleports="Teleport",visual="Visual",
+        graphics="Visuals",camera="Visuals",script="Scripts",code="Scripts",utility="Misc",other="Misc",
+        auto="Automatics",automatic="Automatics",troll="Trolling",fun="Trolling",about="Info",information="Info",
+        configuration="Config",environment="World",ball="Catching",swords="Combat",box="Misc",layers="Physics"}
+    local lookup = c.IconLookup or {}
+    local cell = lookup[key(name)] or lookup[key(aliases[key(name)])] or lookup[key(icon)]
+        or lookup[key(aliases[key(icon)])] or lookup[key(stock)] or lookup.misc
+    if c.IconAtlas and c.IconAtlas ~= "" and cell then
+        return c.IconAtlas, cell, Vector2.new(64,64)
+    end
+    return __KZ_ResolveIcon(icon), Vector2.new(0,0), Vector2.new(0,0)
+end
+function __KZ_Cozy.SetIcon(object, name)
+    if not object then return end
+    local asset, offset, size = __KZ_Cozy.ResolveTabIcon(name)
+    object.Image, object.ImageRectOffset, object.ImageRectSize = asset, offset, size
+end
+
 local function __KZ_AddNav(name, icon, order)
     if navEntries[name] then return navEntries[name] end
     __KZ_TabCounter = __KZ_TabCounter + 1
@@ -4040,11 +3914,10 @@ local function __KZ_AddNav(name, icon, order)
     })
     Corner(indicator, 3)
     Gradient(indicator, {"Accent3", "Accent", "Accent2"}, 90)
+    local navImage, navOffset, navSize = __KZ_Cozy.ResolveTabIcon(name, icon)
     local image = New("ImageLabel", {
         Parent = button, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset(22, 22), Size = UDim2.fromOffset(21, 21),
-        BackgroundTransparency = 1, Image = (__KZ_Cozy.NavIcons and __KZ_Cozy.NavIcons[name] and __KZ_Cozy.IconAtlas) or __KZ_ResolveIcon(icon),
-        ImageRectOffset = (__KZ_Cozy.NavIcons and __KZ_Cozy.NavIcons[name]) or Vector2.new(0, 0),
-        ImageRectSize = (__KZ_Cozy.NavIcons and __KZ_Cozy.NavIcons[name]) and Vector2.new(64, 64) or Vector2.new(0, 0), ImageColor3 = T.TextSub, ZIndex = 24,
+        BackgroundTransparency = 1, Image = navImage, ImageRectOffset = navOffset, ImageRectSize = navSize, ImageColor3 = T.TextSub, ZIndex = 24,
     })
     local label = New("TextLabel", {
         Parent = button, Position = UDim2.fromOffset(48, 0), Size = UDim2.new(1, -78, 1, 0),
@@ -4360,6 +4233,8 @@ local __KZ_WindowOpen = true
 local function __KZ_SetOpen(open)
     local c = __KZ_Cozy
     if not c.Ready or c.Active or destroyed or __KZ_QOL.Closing then return end
+    if (open == true) == __KZ_WindowOpen and not c.WindowAnimating then return end
+    local wasAnimating = c.WindowAnimating
     c.WindowGeneration = (c.WindowGeneration or 0) + 1
     local generation = c.WindowGeneration
     local wasOpen = __KZ_WindowOpen
@@ -4379,7 +4254,7 @@ local function __KZ_SetOpen(open)
             if generation == c.WindowGeneration then c.WindowAnimating = false end
         end)
     else
-        if wasOpen then c.WindowRestPosition = Window.Position end
+        if wasOpen and not wasAnimating then c.WindowRestPosition = Window.Position end
         if activeDropdown then activeDropdown.Visible = false end
         if activeColorPopup then activeColorPopup.Visible = false end
         DropdownLayer.Visible = false
@@ -4450,14 +4325,51 @@ __KZ_UpdateResponsiveScale()
 -- Geometric ambient layer removed; theme artwork is the only background.
 
 -- Default pages
-__KZ_Cozy.NavIcons = {}
-__KZ_Cozy.IconAtlas = __KZ_Cozy.Asset("mochi-icons-v1.png")
+__KZ_Cozy.NavIcons, __KZ_Cozy.IconLookup = {}, {}
+__KZ_Cozy.IconAtlas = __KZ_Cozy.Asset("mochi-lucide-v2.png")
 if __KZ_Cozy.IconAtlas ~= "" then
-    for index, name in ipairs({"Home", "QB", "Catching", "Kicker", "Player", "Physics", "Visual", "Defense",
-        "Automatics", "Trolling", "Misc", "World", "Settings", "Search", "Close", "Minimize", "Chevron", "Paw"}) do
-        __KZ_Cozy.NavIcons[name] = Vector2.new(((index - 1) % 8) * 64, math.floor((index - 1) / 8) * 64)
+    for index, name in ipairs({"Home", "QB", "Catching", "Kicker", "Player", "Physics", "Visual", "Defense", "Automatics", "Trolling", "Misc", "World", "Settings", "Search", "Close", "Minimize", "Chevron", "Paw", "Scripts", "Combat", "Players", "Visuals", "Movement", "Teleport", "ESP", "Main", "Config", "Info", "Favorites", "Active", "CatchingAssist", "Kicking"}) do
+        local offset = Vector2.new(((index - 1) % 8) * 64, math.floor((index - 1) / 8) * 64)
+        __KZ_Cozy.NavIcons[name] = offset
+        __KZ_Cozy.IconLookup[name:lower():gsub("[^%w]", "")] = offset
     end
+    __KZ_Cozy.IconLookup["house"] = __KZ_Cozy.NavIcons.Home
+    __KZ_Cozy.IconLookup["crosshair"] = __KZ_Cozy.NavIcons.QB
+    __KZ_Cozy.IconLookup["hand"] = __KZ_Cozy.NavIcons.Catching
+    __KZ_Cozy.IconLookup["footprints"] = __KZ_Cozy.NavIcons.Kicker
+    __KZ_Cozy.IconLookup["userround"] = __KZ_Cozy.NavIcons.Player
+    __KZ_Cozy.IconLookup["atom"] = __KZ_Cozy.NavIcons.Physics
+    __KZ_Cozy.IconLookup["eye"] = __KZ_Cozy.NavIcons.Visual
+    __KZ_Cozy.IconLookup["shield"] = __KZ_Cozy.NavIcons.Defense
+    __KZ_Cozy.IconLookup["zap"] = __KZ_Cozy.NavIcons.Automatics
+    __KZ_Cozy.IconLookup["cat"] = __KZ_Cozy.NavIcons.Trolling
+    __KZ_Cozy.IconLookup["boxes"] = __KZ_Cozy.NavIcons.Misc
+    __KZ_Cozy.IconLookup["globe"] = __KZ_Cozy.NavIcons.World
+    __KZ_Cozy.IconLookup["settings2"] = __KZ_Cozy.NavIcons.Settings
+    __KZ_Cozy.IconLookup["search"] = __KZ_Cozy.NavIcons.Search
+    __KZ_Cozy.IconLookup["x"] = __KZ_Cozy.NavIcons.Close
+    __KZ_Cozy.IconLookup["minus"] = __KZ_Cozy.NavIcons.Minimize
+    __KZ_Cozy.IconLookup["chevronright"] = __KZ_Cozy.NavIcons.Chevron
+    __KZ_Cozy.IconLookup["pawprint"] = __KZ_Cozy.NavIcons.Paw
+    __KZ_Cozy.IconLookup["codexml"] = __KZ_Cozy.NavIcons.Scripts
+    __KZ_Cozy.IconLookup["swords"] = __KZ_Cozy.NavIcons.Combat
+    __KZ_Cozy.IconLookup["users"] = __KZ_Cozy.NavIcons.Players
+    __KZ_Cozy.IconLookup["scaneye"] = __KZ_Cozy.NavIcons.Visuals
+    __KZ_Cozy.IconLookup["personstanding"] = __KZ_Cozy.NavIcons.Movement
+    __KZ_Cozy.IconLookup["navigation"] = __KZ_Cozy.NavIcons.Teleport
+    __KZ_Cozy.IconLookup["scaneye"] = __KZ_Cozy.NavIcons.ESP
+    __KZ_Cozy.IconLookup["house"] = __KZ_Cozy.NavIcons.Main
+    __KZ_Cozy.IconLookup["slidershorizontal"] = __KZ_Cozy.NavIcons.Config
+    __KZ_Cozy.IconLookup["info"] = __KZ_Cozy.NavIcons.Info
+    __KZ_Cozy.IconLookup["heart"] = __KZ_Cozy.NavIcons.Favorites
+    __KZ_Cozy.IconLookup["activity"] = __KZ_Cozy.NavIcons.Active
+    __KZ_Cozy.IconLookup["hand"] = __KZ_Cozy.NavIcons.CatchingAssist
+    __KZ_Cozy.IconLookup["footprints"] = __KZ_Cozy.NavIcons.Kicking
+    __KZ_Cozy.SetIcon(SearchIcon, "Search")
+    __KZ_Cozy.SetIcon(CloseButton, "Close")
+    __KZ_Cozy.SetIcon(MinimizeButton, "Minimize")
 end
+
 __KZ_AddNav("Home", ICONS.Home, 1)
 __KZ_AddNav("Settings", ICONS.Settings, 999)
 __KZ_ApplyTheme()
@@ -4519,7 +4431,7 @@ LyraZen.ProtectGui = KZAdapter.ProtectGui
 -- Keep the final API on an existing table so this large one-file UI stays
 -- below Luau's 200-local-register compilation limit.
 KZAdapter.__KZ_UI_API = {
-    Version = "MochiHub-SoftKitty-1.1",
+    Version = "MochiHub-SoftKitty-1.2",
     Window = __KZ_Window, WindowGui = Window, Screen = Screen,
     Theme = T, Themes = Themes, ThemeName = function() return themeName end,
     Icons = ICONS, pages = pages, navEntries = navEntries, AccentSyncPickers = AccentSyncPickers,
