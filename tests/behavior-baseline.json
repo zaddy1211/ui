@@ -1,0 +1,48 @@
+{
+  "source": "test-ui-thing @ 59fe4d9",
+  "normalization": "Numeric background opacity, accent/main text color assignments, trailing whitespace and brand text only.",
+  "blocks": [
+    {
+      "name": "slider",
+      "start": "local function Slider(",
+      "end": "local function RangeSlider(",
+      "sha256": "928b8649182ac0b1978c09faf63ea0952335ad99c7c944464b70751bfa4d9ad0"
+    },
+    {
+      "name": "range slider",
+      "start": "local function RangeSlider(",
+      "end": "local function Dropdown(",
+      "sha256": "153b127cf5d91f3c4dcff4b7f546f6386b3f4d32cbba6e93f31da5aa3ac0117f"
+    },
+    {
+      "name": "text input",
+      "start": "local function Textbox(",
+      "end": "local function Keybind(",
+      "sha256": "8ef8b06e8c3353138ca3fb98292a635d6f42299636d08c6f0f91672ef895a7a4"
+    },
+    {
+      "name": "keybind",
+      "start": "local function Keybind(",
+      "end": "local function Colorpicker(",
+      "sha256": "ee57585ecce2ed2e5b131a93927d75b2caf18d176db4a6929332cd7224a460c9"
+    },
+    {
+      "name": "color picker",
+      "start": "local function Colorpicker(",
+      "end": "local function Divider(",
+      "sha256": "cf6df3e43bdda05d49cec2232d87c14ce65b77d1d28501861a81533deda0ae18"
+    },
+    {
+      "name": "section reset registration",
+      "start": "local function RegisterSectionControl(",
+      "end": "local function ElementBase(",
+      "sha256": "c82b7c58fcc537cb6d1d8e81802ae425ec78a833f9d65488d4cf55bd7bdb406f"
+    },
+    {
+      "name": "tab adapter",
+      "start": "local function __KZ_MakeSection(",
+      "end": "-- Window controls",
+      "sha256": "6cc4e158d17e669fd65d334037e4aa8623af544187900786874243a58da34125"
+    }
+  ]
+}
