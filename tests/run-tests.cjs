@@ -72,7 +72,20 @@ try {
       .replace('-- INSERT ICON ALIASES',slice('local __KZ_IconAliases = {','local function __KZ_UpdateNavSelectionGlow'))
       .replace('-- INSERT TAB ICON RESOLVER',slice('function __KZ_Cozy.ResolveTabIcon(name, icon)','local function __KZ_AddNav'))
       .replace('-- INSERT ICON CELLS',slice('__KZ_Cozy.NavIcons, __KZ_Cozy.IconLookup = {}, {}','__KZ_AddNav("Home"')));
-  for(const file of [bundle,configBundle,motionBundle,typographyBundle,visualBundle]) {
+  const sessionBundle=path.join(temp,'sessions.luau');
+  fs.writeFileSync(sessionBundle,fs.readFileSync(path.join(__dirname,'intro-harness.luau'),'utf8')+'\n'+
+    fs.readFileSync(path.join(__dirname,'session-cases.luau'),'utf8')
+      .replace('-- INSERT SERIALIZATION',slice('    local function encode(value)','    function CM.Register('))
+      .replace('-- INSERT SESSION CONFIG',slice('    -- Session snapshots contain feature values only','    ensureTree()\n    return CM'))
+      .replace('-- INSERT CONFIG LIST',slice('    function CM.List()','    function CM.Save('))
+      .replace('-- INSERT SESSION CONTROLLER',slice('-- Previous-session consent.','local __KZ_WindowGui = Window')));
+  const homeBundle=path.join(temp,'home.luau');
+  fs.writeFileSync(homeBundle,fs.readFileSync(path.join(__dirname,'intro-harness.luau'),'utf8')+'\n'+
+    fs.readFileSync(path.join(__dirname,'home-cases.luau'),'utf8')
+      .replace('-- INSERT INFO ROW',slice('local function HomeInfoRow(','local function HomeStatCard('))
+      .replace('-- INSERT FAVORITES',slice('-- Home favorites and reminders share','-- Active features'))
+      .replace('-- INSERT REGISTRATION',slice('    function CM.Register(','    function CM.List(')));
+  for(const file of [bundle,configBundle,motionBundle,typographyBundle,visualBundle,sessionBundle,homeBundle]) {
     const run=cp.spawnSync(process.env.LUAU_BIN||'luau',[file],{encoding:'utf8'});
     process.stdout.write(run.stdout||''); process.stderr.write(run.stderr||'');
     if(run.error) throw run.error;

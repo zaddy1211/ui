@@ -1514,7 +1514,7 @@ local ConfigManager = (function()
         if value.Type == "Color3" then
             return Color3.new(value.R or 0, value.G or 0, value.B or 0)
         elseif value.Type == "EnumItem" then
-            local et = Enum[value.EnumType]
+            local et = Enum[tostring(value.EnumType):gsub("^Enum%.", "")]
             if et then
                 local ok, item = pcall(function() return et[value.Name] end)
                 if ok then return item end
@@ -1529,6 +1529,7 @@ local ConfigManager = (function()
     function CM.Register(name, control)
         if type(name) == "string" and type(control) == "table" then
             CM.Flags[name] = control
+            if __KZ_QOL.BindHomeControl then pcall(__KZ_QOL.BindHomeControl,name,control) end
         end
         return control
     end
@@ -1545,8 +1546,11 @@ local ConfigManager = (function()
                 path = entry.Path or entry.path or entry.Name or entry.name or tostring(entry)
             end
             if type(path) == "string" then
-                local n = path:match("([^/\\]+)%.json$")
-                if n then table.insert(names, n) end
+                local normalized = path:gsub("\\", "/")
+                if not normalized:find("/Session/", 1, true) then
+                    local n = path:match("([^/\\]+)%.json$")
+                    if n then table.insert(names, n) end
+                end
             end
         end
         table.sort(names)
@@ -1708,6 +1712,78 @@ local ConfigManager = (function()
         if not name then return false, "none" end
         return CM.Load(name)
     end
+
+    -- Session snapshots contain feature values only, separate from named configs and favorites.
+    local function SessionScope()
+        return tostring((game.GameId and game.GameId~=0 and game.GameId) or game.PlaceId or 0)
+    end
+    function CM.FeatureSessionPath()
+        return CM.Folder.."/Session/"..SessionScope().."-LastSession-v1.json"
+    end
+    function CM.CaptureFeatureSession()
+        local flags, count = {},0
+        for name,entry in pairs(__KZ_QOL.HomeControls or {}) do
+            local control=entry.Control
+            if control and (not entry.Row or entry.Row.Parent) and type(control.Get)=="function" and type(control.Set)=="function" then
+                local ok,value=pcall(control.Get)
+                if ok then
+                    if value==nil and control.__KZType=="keybind" then
+                        flags[name]={Type="Unbound"};count+=1
+                    elseif value~=nil then
+                        local encoded,result=pcall(encode,value)
+                        if encoded then flags[name]=result;count+=1 end
+                    end
+                end
+            end
+        end
+        return {Version=1,ScriptId=SCRIPT_ID,ScopeId=SessionScope(),Flags=flags},count
+    end
+    function CM.ReadFeatureSession()
+        if typeof(readfile)~="function" or typeof(isfile)~="function" then return nil end
+        local path=CM.FeatureSessionPath()
+        local exists,found=pcall(isfile,path)
+        if not exists or not found then return nil end
+        local ok,data=pcall(function() return HttpService:JSONDecode(readfile(path)) end)
+        if not ok or type(data)~="table" or data.Version~=1 or data.ScriptId~=SCRIPT_ID or data.ScopeId~=SessionScope() or type(data.Flags)~="table" then return nil end
+        for name in pairs(data.Flags) do if type(name)~="string" then return nil end end
+        return next(data.Flags) and data or nil
+    end
+    function CM.WriteFeatureSession(data)
+        if typeof(writefile)~="function" or typeof(makefolder)~="function" or typeof(isfolder)~="function" then return false,"unavailable" end
+        ensureTree()
+        local folder=CM.Folder.."/Session"
+        local made,problem=pcall(function() if not isfolder(folder) then makefolder(folder) end end)
+        if not made then return false,problem end
+        local ok,raw=pcall(function() return HttpService:JSONEncode(data) end)
+        if not ok then return false,raw end
+        return pcall(writefile,CM.FeatureSessionPath(),raw)
+    end
+    function CM.ApplyFeatureSession(data,onlyName,appliedNames)
+        if type(data)~="table" or data.Version~=1 or data.ScriptId~=SCRIPT_ID or data.ScopeId~=SessionScope() or type(data.Flags)~="table" then return false,0,0 end
+        local applied,skipped=0,0
+        for name,raw in pairs(data.Flags) do
+            if (not onlyName or onlyName==name) and (not appliedNames or not appliedNames[name]) then
+                local entry=__KZ_QOL.HomeControls and __KZ_QOL.HomeControls[name]
+                local control=entry and entry.Control
+                if control and (not entry.Row or entry.Row.Parent) and type(control.Set)=="function" and type(control.Get)=="function" then
+                    local unbound=type(raw)=="table" and raw.Type=="Unbound"
+                    local ok,value=pcall(decode,raw)
+                    if unbound then value=nil end
+                    local got,current=pcall(control.Get)
+                    local valid=ok and got and (not unbound or control.__KZType=="keybind")
+                    if control.__KZType=="keybind" then valid=valid and (unbound or typeof(value)=="EnumItem")
+                    elseif type(current)=="boolean" then valid=valid and type(value)=="boolean"
+                    elseif current~=nil then valid=valid and typeof(value)==typeof(current) end
+                    if valid and (value~=nil or unbound) and pcall(control.Set,value,true) then
+                        applied+=1
+                        if appliedNames then appliedNames[name]=true end
+                    else skipped+=1 end
+                else skipped+=1 end
+            end
+        end
+        return true,applied,skipped
+    end
+
 
     ensureTree()
     return CM
@@ -3077,7 +3153,7 @@ end
 local function HomeInfoRow(parent, labelText, valueText, accentValue)
     local row = New("Frame", {
         Parent = parent, Size = UDim2.new(1, 0, 0, 38),
-        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.18,
+        BackgroundColor3 = T.ElementBG, BackgroundTransparency = T.RowTransparency,
     })
     Corner(row, 10)
     Gradient(row, {
@@ -3090,6 +3166,7 @@ local function HomeInfoRow(parent, labelText, valueText, accentValue)
         Parent = row, Position = UDim2.fromOffset(12, 0), Size = UDim2.new(0.42, 0, 1, 0),
         BackgroundTransparency = 1, Text = labelText, Font = Enum.Font.Gotham,
         TextSize = 10, TextColor3 = T.TextSub, TextXAlignment = Enum.TextXAlignment.Left,
+        TextTruncate = Enum.TextTruncate.AtEnd,
     })
     local value = New("TextLabel", {
         Parent = row, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0.5, 0),
@@ -3100,7 +3177,7 @@ local function HomeInfoRow(parent, labelText, valueText, accentValue)
     })
     BindTheme(function()
         if row.Parent then
-            row.BackgroundColor3 = T.ElementBG
+            row.BackgroundColor3 = T.ElementBG; row.BackgroundTransparency = T.RowTransparency
             label.TextColor3 = T.TextSub
             value.TextColor3 = accentValue and T.Accent or T.TextMain
         end
@@ -3142,67 +3219,47 @@ local function HomeStatCard(parent, order, titleText, valueText, accentValue)
 end
 
 local Home = CreatePage("Home")
+local homeThemeStat, homeStatusStat -- Compatibility for the existing update hooks.
 do
-local welcomeCard = New("Frame", {
-    Parent = Home.Body, Size = UDim2.new(1, 0, 0, 86), BackgroundColor3 = T.SectionBG,
-    BackgroundTransparency = 0.70, ClipsDescendants = true,
-})
-Corner(welcomeCard, 15)
-Gradient(welcomeCard, {
-    function(t) return Mix(t.SectionBG, t.Accent3, 0.3) end,
-    function(t) return Mix(t.SectionBG, t.Accent, 0.1) end,
-    function(t) return Mix(t.SectionBG, t.Accent2, 0.22) end,
-}, 12)
-local welcomeStroke = Stroke(welcomeCard, "Accent", 0.45, 1.1)
-local welcomeBar = New("Frame", {
-    Parent = welcomeCard, Position = UDim2.fromOffset(12, 18), Size = UDim2.fromOffset(3, 26), BackgroundColor3 = T.Accent,
-    BorderSizePixel = 0,
-})
-Corner(welcomeBar, 3)
-Gradient(welcomeBar, {"Accent3", "Accent", "Accent2"}, 90)
-local welcomeTitle = New("TextLabel", {
-    Parent = welcomeCard, Position = UDim2.fromOffset(25, 15), Size = UDim2.new(1, -47, 0, 28),
-    BackgroundTransparency = 1, Text = "Welcome back, " .. tostring(LocalPlayer.DisplayName),
-    Font = Enum.Font.GothamBold, TextSize = 18, TextColor3 = T.TextMain,
-    TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
-})
-local welcomeSub = New("TextLabel", {
-    Parent = welcomeCard, Position = UDim2.fromOffset(25, 45), Size = UDim2.new(1, -47, 0, 22),
-    BackgroundTransparency = 1,
-    Text = tostring((__KZ_UI_OPTIONS.Subtitle or __KZ_UI_OPTIONS.Game) or "Universal Hub") .. "  •  " .. themeName .. " theme  •  Ready",
-    Font = Enum.Font.Gotham, TextSize = 10, TextColor3 = T.TextSub,
-    TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
-})
-BindTheme(function()
-    if welcomeCard.Parent then
-        welcomeCard.BackgroundColor3 = T.SectionBG
-        welcomeStroke.Color = T.Accent
-        welcomeBar.BackgroundColor3 = T.Accent
-        welcomeTitle.TextColor3 = T.TextMain
-        welcomeSub.TextColor3 = T.TextSub
-        welcomeSub.Text = tostring((__KZ_UI_OPTIONS.Subtitle or __KZ_UI_OPTIONS.Game) or "Universal Hub") .. "  •  " .. themeName .. " theme  •  Ready"
-    end
-end)
+    local welcome = New("Frame", {
+        Parent = Home.Body, Name = "MochiWelcome", LayoutOrder = 1,
+        Size = UDim2.new(1, 0, 0, 66), BackgroundColor3 = T.SectionBG,
+        BackgroundTransparency = T.GlassTransparency, ClipsDescendants = true,
+    })
+    Corner(welcome, 14)
+    Stroke(welcome, "Border", .65, 1)
+    local portrait = New("ImageLabel", {
+        Parent = welcome, Position = UDim2.fromOffset(12,11), Size = UDim2.fromOffset(44,44),
+        BackgroundColor3 = T.ControlBG, BackgroundTransparency = .25,
+        Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(LocalPlayer.UserId) .. "&w=150&h=150",
+    })
+    Corner(portrait, 12)
+    local heading = New("TextLabel", {
+        Parent = welcome, Position = UDim2.fromOffset(70,10), Size = UDim2.new(1,-84,0,25),
+        BackgroundTransparency = 1, Text = "Welcome back, " .. tostring(LocalPlayer.DisplayName) .. " ♡",
+        Font = Enum.Font.GothamBold, TextSize = 17, TextColor3 = T.TextMain,
+        TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+    })
+    __KZ_QOL.HomeGameLabel = New("TextLabel", {
+        Parent = welcome, Position = UDim2.fromOffset(70,36), Size = UDim2.new(1,-84,0,18),
+        BackgroundTransparency = 1, Text = tostring(__KZ_UI_OPTIONS.Game or __KZ_UI_OPTIONS.Subtitle or "Your game"),
+        Font = Enum.Font.Gotham, TextSize = 11, TextColor3 = T.TextSub,
+        TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+    })
+    BindTheme(function()
+        if welcome.Parent then
+            welcome.BackgroundColor3, welcome.BackgroundTransparency = T.SectionBG, T.GlassTransparency
+            portrait.BackgroundColor3, heading.TextColor3 = T.ControlBG, T.TextMain
+            __KZ_QOL.HomeGameLabel.TextColor3 = T.TextSub
+        end
+    end)
 end
-local homeStats = New("Frame", {
-    Parent = Home.Body, Size = UDim2.new(1, 0, 0, 92), BackgroundTransparency = 1,
-})
-New("UIGridLayout", {
-    Parent = homeStats, CellPadding = UDim2.fromOffset(10, 0),
-    CellSize = UDim2.new(0.25, -8, 1, 0), SortOrder = Enum.SortOrder.LayoutOrder,
-})
-local homeNameStat = HomeStatCard(homeStats, 1, "SCRIPT", string.upper(tostring((__KZ_UI_OPTIONS.Subtitle or __KZ_UI_OPTIONS.Game) or "UNIVERSAL HUB")), true)
-local homeExecutorStat = HomeStatCard(homeStats, 2, "EXECUTOR", executorName, false)
-local homeThemeStat = HomeStatCard(homeStats, 3, "THEME", themeName, false)
-local homeStatusStat = HomeStatCard(homeStats, 4, "ACTIVE", "0", true)
+__KZ_QOL.FavoritesCard = Section(Home, "Favorite features", "Tap a star in any feature tab to pin it here.")
+__KZ_QOL.FavoritesCard.LayoutOrder = 3
+__KZ_QOL.FavoritePlaceholder = HomeInfoRow(__KZ_QOL.FavoritesCard, "No favorites yet", "Star a feature to get started", false)
+__KZ_QOL.KeybindCard = Section(Home, "Keybind reminders", "Your menu key and assigned feature shortcuts.")
+__KZ_QOL.KeybindCard.LayoutOrder = 4
 
-__KZ_QOL.FavoritesCard = Section(Home, "Favorites", "Right-click any feature row to pin or unpin it here.")
-__KZ_QOL.FavoritePlaceholder = HomeInfoRow(__KZ_QOL.FavoritesCard, "Pinned features", "None yet", false)
-
-__KZ_QOL.QuickActions = Section(Home, "Quick actions", "Fast controls for the current session.")
-Button(Home, __KZ_QOL.QuickActions, "Disable All Features", true, function()
-    if __KZ_QOL.DisableAllFeatures then __KZ_QOL.DisableAllFeatures() end
-end)
 
 local lastIteration = tick()
 local frameCount = 0
@@ -3231,6 +3288,9 @@ table.insert(connections, RunService.RenderStepped:Connect(function(delta)
             ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue() + 0.5)
         end)
 
+        if __KZ_QOL.RefreshHomeState and Home.Group.Parent and Home.Group.Visible and Window.Visible and not __KZ_Cozy.Active then __KZ_QOL.RefreshHomeState() end
+        if __KZ_QOL.TickSession then __KZ_QOL.TickSession() end
+
         if watermarkLabel and watermarkLabel.Parent then
             local activeCount = 0
             for _, control in ipairs(__KZ_QOL.ToggleRegistry) do
@@ -3252,137 +3312,206 @@ end)
 
 local pageDefinitions = {}
 
--- Favorites
+-- Home favorites and reminders share the original controls rather than duplicating feature logic.
 do
 local FavoriteHttp = game:GetService("HttpService")
 local FAVORITES_FILE = ConfigManager.Folder .. "/Favorites.json"
-local favoriteKeys = {}
-local favoriteRowsByKey = {}
-
-local function LoadFavoriteKeys()
-    if typeof(readfile) ~= "function" or typeof(isfile) ~= "function" or not isfile(FAVORITES_FILE) then return end
-    local ok, raw = pcall(readfile, FAVORITES_FILE)
-    if not ok or type(raw) ~= "string" then return end
-    local decodedOk, decoded = pcall(function() return FavoriteHttp:JSONDecode(raw) end)
-    if not decodedOk or type(decoded) ~= "table" then return end
-    for _, key in ipairs(decoded) do
-        if type(key) == "string" then favoriteKeys[key] = true end
-    end
-end
+local favoriteKeys, favoriteRowsByKey, favoriteViews = {}, {}, {}
+__KZ_QOL.HomeControls = {}
 
 local function SaveFavoriteKeys()
-    if typeof(writefile) ~= "function" then return end
+    if typeof(writefile) ~= "function" then return false end
     local list = {}
-    for key, enabled in pairs(favoriteKeys) do
-        if enabled then table.insert(list, key) end
-    end
+    for key, enabled in pairs(favoriteKeys) do if enabled then table.insert(list,key) end end
     table.sort(list)
     local ok, raw = pcall(function() return FavoriteHttp:JSONEncode(list) end)
-    if ok then pcall(writefile, FAVORITES_FILE, raw) end
+    return ok and pcall(writefile, FAVORITES_FILE, raw)
+end
+pcall(function()
+    if typeof(readfile) ~= "function" or typeof(isfile) ~= "function" or not isfile(FAVORITES_FILE) then return end
+    local decoded = FavoriteHttp:JSONDecode(readfile(FAVORITES_FILE))
+    if type(decoded) == "table" then
+        for _, key in ipairs(decoded) do if type(key) == "string" then favoriteKeys[key] = true end end
+    end
+end)
+
+function __KZ_QOL.BindHomeControl(name, control)
+    if type(control.Get) ~= "function" or type(control.Set) ~= "function" then return end
+    local meta = favoriteRowsByKey[name]
+    if not meta then
+        for _, candidate in pairs(favoriteRowsByKey) do
+            if candidate.Row == control.__KZRow then meta = candidate; break end
+        end
+    end
+    if not meta then
+        local match,count=nil,0
+        for _,candidate in pairs(favoriteRowsByKey) do
+            if candidate.Label==name and not candidate.Control then match=candidate;count+=1 end
+        end
+        if count==1 then meta=match end
+    end
+    local page = (meta and meta.Page) or control.__KZPage or name:match("^([^/]+)/")
+    if not page or page == "Home" or page == "Settings" then return end
+    if meta then meta.Control = control end
+    __KZ_QOL.HomeControls[name] = {Control=control,Row=(meta and meta.Row) or control.__KZRow,Page=page,Label=(meta and meta.Label) or control.__KZLabel or name}
+    if favoriteKeys[meta and meta.Key or name] then task.defer(__KZ_QOL.RefreshFavorites) end
+    if __KZ_QOL.OnSessionControl then __KZ_QOL.OnSessionControl(name) end
 end
 
 local function MakeFavoriteHomeRow(meta)
     local row = New("Frame", {
-        Parent = __KZ_QOL.FavoritesCard, Name = "KZFavoriteRow", Size = UDim2.new(1, 0, 0, 42),
-        BackgroundColor3 = T.ElementBG, BackgroundTransparency = 0.18,
+        Parent = __KZ_QOL.FavoritesCard, Name = "MochiFavoriteRow", Size = UDim2.new(1,0,0,46),
+        BackgroundColor3 = T.ElementBG, BackgroundTransparency = T.RowTransparency,
     })
-    Corner(row, 10)
-    local outline = Stroke(row, "Border", 0.28)
+    Corner(row,10); Stroke(row,"Border",.72)
     local title = New("TextLabel", {
-        Parent = row, Position = UDim2.fromOffset(13, 4), Size = UDim2.new(1, -62, 0, 18),
-        BackgroundTransparency = 1, Text = tostring(meta.Label), Font = Enum.Font.GothamSemibold,
-        TextSize = 10, TextColor3 = T.TextMain, TextXAlignment = Enum.TextXAlignment.Left,
-        TextTruncate = Enum.TextTruncate.AtEnd,
+        Parent=row,Position=UDim2.fromOffset(12,5),Size=UDim2.new(1,-154,0,19),BackgroundTransparency=1,
+        Text=meta.Label,Font=Enum.Font.GothamSemibold,TextSize=11,TextColor3=T.TextMain,
+        TextXAlignment=Enum.TextXAlignment.Left,TextTruncate=Enum.TextTruncate.AtEnd,
     })
     local sub = New("TextLabel", {
-        Parent = row, Position = UDim2.fromOffset(13, 21), Size = UDim2.new(1, -62, 0, 15),
-        BackgroundTransparency = 1, Text = tostring(meta.Page), Font = Enum.Font.Gotham,
-        TextSize = 9, TextColor3 = T.TextSub, TextXAlignment = Enum.TextXAlignment.Left,
+        Parent=row,Position=UDim2.fromOffset(12,25),Size=UDim2.new(1,-154,0,15),BackgroundTransparency=1,
+        Text=meta.Page,Font=Enum.Font.Gotham,TextSize=9,TextColor3=T.TextSub,TextXAlignment=Enum.TextXAlignment.Left,
     })
-    local remove = New("TextButton", {
-        Parent = row, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -9, 0.5, 0),
-        Size = UDim2.fromOffset(28, 28), BackgroundColor3 = T.ControlBG, BackgroundTransparency = 0.1,
-        Text = "×", Font = Enum.Font.GothamBold, TextSize = 16, TextColor3 = T.TextSub,
-        AutoButtonColor = false, ZIndex = 7,
+    local jump = New("TextButton", {Parent=row,Size=UDim2.new(1,-142,1,0),BackgroundTransparency=1,Text="",ZIndex=6})
+    local action = New("TextButton", {
+        Parent=row,AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-44,.5,0),Size=UDim2.fromOffset(76,28),
+        BackgroundColor3=T.ControlBG,BackgroundTransparency=.12,Text="Open",Font=Enum.Font.GothamSemibold,
+        TextSize=10,TextColor3=T.TextMain,AutoButtonColor=false,ZIndex=7,
     })
-    Corner(remove, 8)
-    local jump = New("TextButton", {
-        Parent = row, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
-        Text = "", AutoButtonColor = false, ZIndex = 6,
+    Corner(action,9)
+    local unpin = New("TextButton", {
+        Parent=row,AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-8,.5,0),Size=UDim2.fromOffset(28,28),
+        BackgroundTransparency=1,Text="★",Font=Enum.Font.Gotham,TextSize=19,TextColor3=T.Accent3,
+        AutoButtonColor=false,ZIndex=8,
     })
-    jump.MouseButton1Click:Connect(function()
-        if __KZ_QOL.JumpToSearchable then __KZ_QOL.JumpToSearchable(meta.Page, meta.Searchable) end
+    local function OpenFeature()
+        if __KZ_QOL.JumpToSearchable then __KZ_QOL.JumpToSearchable(meta.Page,meta.Searchable) end
+    end
+    local function Paint()
+        if not row.Parent then return end
+        local control = meta.Control
+        local ok, value = false,nil
+        if control and type(control.Get)=="function" then ok,value=pcall(control.Get) end
+        local toggle = ok and type(value)=="boolean" and type(control.Set)=="function"
+        action.Text = toggle and (value and "ON" or "OFF") or "Open"
+        action.TextColor3=toggle and value and Color3.fromRGB(33,27,35) or T.TextMain
+        local color=toggle and value and T.Accent or T.ControlBG
+        if action.BackgroundColor3~=color then Tween(action,.16,{BackgroundColor3=color}) end
+    end
+    jump.MouseButton1Click:Connect(OpenFeature)
+    action.MouseButton1Click:Connect(function()
+        local control=meta.Control
+        local ok,value=false,nil
+        if control and type(control.Get)=="function" then ok,value=pcall(control.Get) end
+        if ok and type(value)=="boolean" and type(control.Set)=="function" then
+            local changed,problem=pcall(control.Set,not value,true)
+            if not changed then Toast("Favorite feature",tostring(problem),3) end
+            Paint()
+        else OpenFeature() end
     end)
-    remove.MouseButton1Click:Connect(function()
-        favoriteKeys[meta.Key] = nil
-        SaveFavoriteKeys()
-        if __KZ_QOL.RefreshFavorites then __KZ_QOL.RefreshFavorites() end
-        Toast("Favorites", tostring(meta.Label) .. " unpinned.", 2)
-    end)
+    unpin.MouseButton1Click:Connect(function() __KZ_QOL.ToggleFavorite(meta) end)
     BindTheme(function()
         if row.Parent then
-            row.BackgroundColor3 = T.ElementBG
-            outline.Color = T.Border
-            title.TextColor3 = T.TextMain
-            sub.TextColor3 = T.TextSub
-            remove.BackgroundColor3 = T.ControlBG
-            remove.TextColor3 = T.TextSub
+            row.BackgroundColor3,row.BackgroundTransparency=T.ElementBG,T.RowTransparency
+            title.TextColor3,sub.TextColor3,action.TextColor3,unpin.TextColor3=T.TextMain,T.TextSub,T.TextMain,T.Accent3
+            Paint()
         end
     end)
-    return row
+    favoriteViews[meta.Key]={Row=row,Paint=Paint}
+    Paint()
 end
 
-__KZ_QOL.RefreshFavorites = function()
-    for _, child in ipairs(__KZ_QOL.FavoritesCard:GetChildren()) do
-        if child:IsA("Frame") and child.Name == "KZFavoriteRow" then child:Destroy() end
+function __KZ_QOL.RefreshFavorites()
+    for _, view in pairs(favoriteViews) do if view.Row.Parent then view.Row:Destroy() end end
+    table.clear(favoriteViews)
+    local metas={}
+    for key,meta in pairs(favoriteRowsByKey) do
+        if favoriteKeys[key] and meta.Row and meta.Row.Parent then table.insert(metas,meta) end
+        if meta.Star and meta.Star.Parent then
+            meta.Star.Text=favoriteKeys[key] and "★" or "☆"
+            meta.Star.TextColor3=favoriteKeys[key] and T.Accent3 or T.TextSub
+        end
     end
-    local metas = {}
-    for key, meta in pairs(favoriteRowsByKey) do
-        if favoriteKeys[key] and meta.Row and meta.Row.Parent then table.insert(metas, meta) end
-    end
-    table.sort(metas, function(a, b)
-        if a.Page == b.Page then return a.Label < b.Label end
-        return a.Page < b.Page
-    end)
-    __KZ_QOL.FavoritePlaceholder.Frame.Visible = #metas == 0
-    if __KZ_QOL.FavoritePlaceholder.Value and __KZ_QOL.FavoritePlaceholder.Value.Parent then
-        __KZ_QOL.FavoritePlaceholder.Value.Text = (#metas == 0) and "None yet" or tostring(#metas) .. " pinned"
-    end
-    for _, meta in ipairs(metas) do MakeFavoriteHomeRow(meta) end
+    table.sort(metas,function(a,b) if a.Page==b.Page then return a.Label<b.Label end; return a.Page<b.Page end)
+    __KZ_QOL.FavoritePlaceholder.Frame.Visible=#metas==0
+    for _,meta in ipairs(metas) do MakeFavoriteHomeRow(meta) end
 end
 
-__KZ_QOL.ToggleFavorite = function(meta)
+function __KZ_QOL.ToggleFavorite(meta)
     if not meta or not meta.Key then return end
-    favoriteKeys[meta.Key] = not favoriteKeys[meta.Key]
-    if not favoriteKeys[meta.Key] then favoriteKeys[meta.Key] = nil end
-    SaveFavoriteKeys()
+    favoriteKeys[meta.Key]=not favoriteKeys[meta.Key] or nil
+    local saved=SaveFavoriteKeys()
     __KZ_QOL.RefreshFavorites()
-    Toast("Favorites", tostring(meta.Label) .. (favoriteKeys[meta.Key] and " pinned." or " unpinned."), 2)
+    Toast("Favorites",meta.Label .. (favoriteKeys[meta.Key] and (saved and " pinned." or " pinned for this session.") or " unpinned."),2)
 end
 
-__KZ_QOL.RegisterFavoriteRow = function(page, label, row, searchable)
-    if not page or not row or not searchable then return end
-    local pageName = tostring(page.Name or "")
-    if pageName == "Home" or pageName == "Settings" then return end
-    local meta = {
-        Key = searchable.Key or (pageName .. "/" .. tostring(label)),
-        Page = pageName,
-        Label = tostring(label or "Feature"),
-        Row = row,
-        Searchable = searchable,
-    }
-    favoriteRowsByKey[meta.Key] = meta
-    row.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton2 then
-            __KZ_QOL.ToggleFavorite(meta)
+function __KZ_QOL.RegisterFavoriteRow(page,label,row,searchable)
+    if not page or not row or not searchable or page.Name=="Home" or page.Name=="Settings" then return end
+    local meta={Key=searchable.Key or(page.Name.."/"..tostring(label)),Page=page.Name,Label=tostring(label or"Feature"),Row=row,Searchable=searchable}
+    favoriteRowsByKey[meta.Key]=meta
+    local star=New("TextButton",{Parent=row,Name="MochiPin",Position=UDim2.new(0,8,.5,-12),Size=UDim2.fromOffset(22,24),
+        BackgroundTransparency=1,Text=favoriteKeys[meta.Key] and "★" or "☆",Font=Enum.Font.Gotham,TextSize=18,
+        TextColor3=favoriteKeys[meta.Key] and T.Accent3 or T.TextSub,AutoButtonColor=false,ZIndex=8})
+    meta.Star=star
+    star.MouseButton1Click:Connect(function() __KZ_QOL.ToggleFavorite(meta) end)
+    row.InputBegan:Connect(function(input) if input.UserInputType==Enum.UserInputType.MouseButton2 then __KZ_QOL.ToggleFavorite(meta) end end)
+    local listener
+    local function ReserveTitle(child)
+        if child:IsA("TextLabel") and child.Text==label and child.TextXAlignment==Enum.TextXAlignment.Left then
+            child.Position=UDim2.new(child.Position.X.Scale,34,child.Position.Y.Scale,child.Position.Y.Offset)
+            child.Size=UDim2.new(child.Size.X.Scale,child.Size.X.Offset-21,child.Size.Y.Scale,child.Size.Y.Offset)
+            if listener then listener:Disconnect();listener=nil end
+            return true
         end
-    end)
+    end
+    local found=false
+    for _,child in ipairs(row:GetChildren()) do if ReserveTitle(child) then found=true;break end end
+    if not found then listener=row.ChildAdded:Connect(ReserveTitle);table.insert(connections,listener) end
     if favoriteKeys[meta.Key] then task.defer(__KZ_QOL.RefreshFavorites) end
 end
 
-LoadFavoriteKeys()
-__KZ_QOL.RefreshFavorites()
+function __KZ_QOL.RefreshKeybinds()
+    local entries={{Label="Toggle menu",Key=menuToggleKey.Name}}
+    for _,control in ipairs(__KZ_QOL.KeybindRegistry) do
+        if control.__KZPage~="Home" and control.__KZPage~="Settings" and control.__KZRow and control.__KZRow.Parent then
+            local ok,key=pcall(control.Get)
+            local named,name=pcall(function() return ok and key and key.Name end)
+            if not named then name=nil end
+            if name and name~="Unknown" and name~="None" then
+                table.insert(entries,{Label=tostring(control.__KZLabel).." · "..tostring(control.__KZPage),Key=name})
+            end
+        end
+    end
+    table.sort(entries,function(a,b)
+        if a.Label==b.Label then return a.Key<b.Key end
+        if a.Label=="Toggle menu" then return true end
+        if b.Label=="Toggle menu" then return false end
+        return a.Label<b.Label
+    end)
+    local signature={}
+    for _,entry in ipairs(entries) do table.insert(signature,entry.Label.."\0"..entry.Key) end
+    signature=table.concat(signature,"\n")
+    if __KZ_QOL.KeybindSignature==signature then return end
+    __KZ_QOL.KeybindSignature=signature
+    for _,child in ipairs(__KZ_QOL.KeybindCard:GetChildren()) do if child.Name=="MochiKeybindRow" then child:Destroy() end end
+    for index,entry in ipairs(entries) do
+        local key=entry.Key:gsub("RightControl","Right Ctrl"):gsub("LeftControl","Left Ctrl"):gsub("RightShift","Right Shift"):gsub("LeftShift","Left Shift")
+        local view=HomeInfoRow(__KZ_QOL.KeybindCard,entry.Label,key,false)
+        view.Frame.Name,view.Frame.LayoutOrder="MochiKeybindRow",index
+    end
 end
+
+function __KZ_QOL.RefreshHomeState()
+    for _,view in pairs(favoriteViews) do view.Paint() end
+    __KZ_QOL.RefreshKeybinds()
+    local text=BrandSub and BrandSub.Text
+    if text and text~="SOFT KITTY EDITION" and text~="UNIVERSAL HUB" then __KZ_QOL.HomeGameLabel.Text=text end
+end
+__KZ_QOL.RefreshFavorites()
+__KZ_QOL.RefreshKeybinds()
+end
+
 
 -- Active features
 __KZ_QOL.UpdateActiveUI = function()
@@ -3544,6 +3673,9 @@ ConfigManager.Register("Window Scale", Slider(Settings, appearance, "Window Scal
     end)
 end))
 local behavior = Section(Settings, "Window & navigation")
+ConfigManager.Register("Remember last session", Toggle(Settings, behavior, "Remember last session", __KZ_Cozy.Preferences.RememberFeatures ~= false, function(value)
+    if __KZ_QOL.SetSessionMemory then __KZ_QOL.SetSessionMemory(value) end
+end))
 ConfigManager.Register("Reduced Motion", Toggle(Settings, behavior, "Reduced Motion", __KZ_Cozy.Reduced, function(value)
     __KZ_Cozy.Reduced = value
     __KZ_Cozy.Preferences.ReducedMotion = value
@@ -3769,6 +3901,135 @@ __KZ_ApplyTheme = function()
 end
 
 local __KZ_UnloadHooks = {}
+-- Previous-session consent. No restore callback or snapshot write happens before an answer.
+do
+local session={Previous=ConfigManager.ReadFeatureSession(),Decision=nil,Applied={},LastWrite=0,LastFlags=nil,PendingControls=0}
+__KZ_QOL.Session=session
+local function Enabled() return __KZ_Cozy.Preferences.RememberFeatures~=false end
+local function Same(a,b)
+    if type(a)~=type(b) then return false end
+    if type(a)~="table" then return a==b end
+    for key,value in pairs(a) do if not Same(value,b[key]) then return false end end
+    for key in pairs(b) do if a[key]==nil then return false end end
+    return true
+end
+function __KZ_QOL.CheckpointSession(force)
+    if not Enabled() or (session.Previous and session.Decision==nil) then return false end
+    if not __KZ_Cozy.Ready or __KZ_Cozy.Error then return false end
+    if session.PendingControls>0 then return false end
+    if not force and (destroyed or __KZ_Cozy.Active or not __KZ_Cozy.Ready) then return false end
+    local data,count=ConfigManager.CaptureFeatureSession()
+    if count==0 then return false end
+    -- Keep entries for late-loaded modules after consent, until their controls register.
+    if session.Decision==true and session.Previous then
+        for name,value in pairs(session.Previous.Flags) do
+            if not __KZ_QOL.HomeControls[name] then data.Flags[name]=value end
+        end
+    end
+    if Same(data.Flags,session.LastFlags) then return true end
+    local ok=ConfigManager.WriteFeatureSession(data)
+    if ok then session.LastFlags=data.Flags end
+    return ok
+end
+function __KZ_QOL.AnswerSession(restore)
+    if session.Decision~=nil or not session.Previous then return end
+    session.Decision=restore==true
+    if session.Prompt then
+        session.Prompt.Visible=false
+        session.Prompt.Active=false
+    end
+    if session.Decision then
+        local _,applied=ConfigManager.ApplyFeatureSession(session.Previous,nil,session.Applied)
+        Toast("Previous session","Restored "..tostring(applied).." matching feature settings.",3)
+    end
+    if __KZ_QOL.RefreshHomeState then __KZ_QOL.RefreshHomeState() end
+    session.LastWrite=tick()
+    -- Capture the chosen current state on the next checkpoint; No never invokes Set.
+end
+local function BuildPrompt()
+    local shield=New("TextButton",{
+        Parent=Home.Group,Name="MochiSessionQuestion",Size=UDim2.fromScale(1,1),
+        BackgroundColor3=T.MainBG,BackgroundTransparency=.52,Text="",AutoButtonColor=false,
+        Active=true,Modal=true,ZIndex=600,
+    })
+    local card=New("CanvasGroup",{
+        Parent=shield,AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),
+        Size=UDim2.fromOffset(392,174),BackgroundColor3=T.SectionBG,BackgroundTransparency=.03,
+        GroupTransparency=1,BorderSizePixel=0,ZIndex=601,
+    })
+    Corner(card,18);Stroke(card,"Border",.3,1)
+    local title=New("TextLabel",{
+        Parent=card,Position=UDim2.fromOffset(22,19),Size=UDim2.new(1,-44,0,27),BackgroundTransparency=1,
+        Text="Restore your last session?",Font=Enum.Font.GothamBold,TextSize=17,TextColor3=T.TextMain,ZIndex=602,
+        TextXAlignment=Enum.TextXAlignment.Left,
+    })
+    local body=New("TextLabel",{
+        Parent=card,Position=UDim2.fromOffset(22,53),Size=UDim2.new(1,-44,0,39),BackgroundTransparency=1,
+        Text="Use the feature settings from your previous visit?",Font=Enum.Font.Gotham,TextSize=12,
+        TextColor3=T.TextSub,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=602,
+    })
+    for index,label in ipairs({"Yes","No"}) do
+        local button=New("TextButton",{
+            Parent=card,Position=UDim2.fromOffset(22+(index-1)*178,115),Size=UDim2.fromOffset(170,37),
+            BackgroundColor3=index==1 and T.Accent or T.ControlBG,Text=label,Font=Enum.Font.GothamSemibold,
+            TextSize=12,TextColor3=index==1 and Color3.fromRGB(33,27,35) or T.TextMain,AutoButtonColor=false,ZIndex=602,
+        })
+        Corner(button,11)
+        local scale=New("UIScale",{Parent=button,Scale=1})
+        button.MouseEnter:Connect(function() Tween(scale,.16,{Scale=1.015}) end)
+        button.MouseLeave:Connect(function() Tween(scale,.16,{Scale=1}) end)
+        button.MouseButton1Click:Connect(function() __KZ_QOL.AnswerSession(label=="Yes") end)
+        BindTheme(function() if button.Parent then button.BackgroundColor3=index==1 and T.Accent or T.ControlBG;button.TextColor3=index==1 and Color3.fromRGB(33,27,35) or T.TextMain end end)
+    end
+    BindTheme(function()
+        if card.Parent then shield.BackgroundColor3=T.MainBG;card.BackgroundColor3=T.SectionBG;title.TextColor3=T.TextMain;body.TextColor3=T.TextSub end
+    end)
+    session.Prompt=shield
+    local scale=New("UIScale",{Parent=card,Scale=__KZ_Cozy.Reduced and 1 or .97})
+    Tween(card,.2,{GroupTransparency=0});Tween(scale,.25,{Scale=1})
+end
+function __KZ_QOL.ShowSessionPrompt()
+    if destroyed or not Enabled() or not session.Previous or session.Decision~=nil or session.Prompt then return end
+    if __KZ_Cozy.Active or not __KZ_Cozy.Ready or not Home.Group.Visible or not Window.Visible then return end
+    local compatible=false
+    for name in pairs(session.Previous.Flags) do if __KZ_QOL.HomeControls[name] then compatible=true;break end end
+    if compatible then BuildPrompt() end
+end
+function __KZ_QOL.OnSessionControl(name)
+    session.PendingControls+=1
+    task.defer(function()
+        session.PendingControls-=1
+        if destroyed then return end
+        if Enabled() and session.Decision==true and session.Previous then
+            ConfigManager.ApplyFeatureSession(session.Previous,name,session.Applied)
+        end
+        __KZ_QOL.ShowSessionPrompt()
+    end)
+end
+function __KZ_QOL.TickSession(force)
+    __KZ_QOL.ShowSessionPrompt()
+    if force or tick()-session.LastWrite>=2 then
+        session.LastWrite=tick()
+        __KZ_QOL.CheckpointSession(false)
+    end
+end
+function __KZ_QOL.OnHomeReady()
+    __KZ_QOL.RefreshHomeState()
+    __KZ_QOL.TickSession(true)
+end
+function __KZ_QOL.SetSessionMemory(enabled)
+    __KZ_Cozy.Preferences.RememberFeatures=enabled
+    __KZ_Cozy.SavePreferences()
+    if not enabled and session.Prompt then session.Prompt.Visible=false end
+    if enabled then
+        if session.Prompt and session.Decision==nil then session.Prompt.Visible=true end
+        __KZ_QOL.ShowSessionPrompt()
+    end
+end
+table.insert(__KZ_UnloadHooks or {},function() __KZ_QOL.CheckpointSession(true) end)
+end
+
+
 local __KZ_WindowGui = Window
 local __KZ_WindowMethods = {}
 local __KZ_TabCounter = 0
@@ -3851,8 +4112,10 @@ local function __KZ_SelectPage(name)
         end
     end
     if targetPage.Scroll then targetPage.Scroll.CanvasPosition = Vector2.new(0, 0) end
-    PageTitle.Text = name == "Home" and "Status" or name
-    Breadcrumb.Text = "Mochi Hub  /  " .. (name == "Home" and "Status" or name)
+    if name == "Home" and __KZ_QOL.ShowSessionPrompt then task.defer(__KZ_QOL.ShowSessionPrompt) end
+    if name == "Home" and __KZ_QOL.RefreshHomeState then task.defer(__KZ_QOL.RefreshHomeState) end
+    PageTitle.Text = name == "Home" and "Home" or name
+    Breadcrumb.Text = "Mochi Hub  /  " .. (name == "Home" and "Home" or name)
     SearchInput.Text = ""
     for navName, item in pairs(navEntries) do
         local selected = navName == name
@@ -4383,6 +4646,7 @@ Scale.Scale = GetTargetScale()
 __KZ_Cozy.Progress(3, "Loading settings…")
 __KZ_Cozy.RevealContent = function()
     Watermark.Visible = watermarkEnabled
+    if __KZ_QOL.OnHomeReady then __KZ_QOL.OnHomeReady() end
     local page = pages[currentPage]
     if not page or not page.Group.Parent or __KZ_Cozy.Reduced then return end
     page.Group.GroupTransparency = 1
@@ -4431,7 +4695,7 @@ LyraZen.ProtectGui = KZAdapter.ProtectGui
 -- Keep the final API on an existing table so this large one-file UI stays
 -- below Luau's 200-local-register compilation limit.
 KZAdapter.__KZ_UI_API = {
-    Version = "MochiHub-SoftKitty-1.2",
+    Version = "MochiHub-SoftKitty-1.3",
     Window = __KZ_Window, WindowGui = Window, Screen = Screen,
     Theme = T, Themes = Themes, ThemeName = function() return themeName end,
     Icons = ICONS, pages = pages, navEntries = navEntries, AccentSyncPickers = AccentSyncPickers,

@@ -37,18 +37,18 @@ local currentPage = "Home"
 local DropdownLayer,SearchResults = New("Frame",{Parent=Window}),New("Frame",{Parent=Window})
 local PageTitle,Breadcrumb,SearchInput = {},{},{}
 local activeDropdown,activeColorPopup
+local __KZ_QOL = {}
 local glowUpdates = 0
 local function __KZ_UpdateNavSelectionGlow() glowUpdates += 1 end
 -- INSERT TAB HANDLER
 __KZ_SelectPage("Settings"); advance(.04); __KZ_SelectPage("Players"); advance(.04); __KZ_SelectPage("Home"); advance(.3)
 assert(currentPage == "Home" and pages.Home.Group.Visible and not pages.Settings.Group.Visible and not pages.Players.Group.Visible)
-assert(PageTitle.Text == "Status" and pages.Home.Group.Position.X.Offset == 0)
+assert(PageTitle.Text == "Home" and pages.Home.Group.Position.X.Offset == 0)
 print("PASS rapid tab switching keeps only the latest page and rejects stale exits")
 __KZ_Cozy.Reduced = true; __KZ_SelectPage("Settings"); advance(.2)
 assert(pages.Settings.Group.Visible and not pages.Home.Group.Visible and pages.Settings.Group.Position.X.Offset == 0)
 print("PASS reduced-motion tabs do not slide or retain an outgoing page")
 __KZ_Cozy.Reduced = false
-local __KZ_QOL = {}
 local __KZ_WindowOpen = true
 local OpenButton,Dim = New("ImageButton",{Parent=Screen}),New("Frame",{Parent=Screen})
 Window.Position = UDim2.fromScale(.5,.5)

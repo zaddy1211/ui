@@ -1,5 +1,13 @@
 # Mochi Hub rebrand report
 
+## Home and previous-session revision (v1.3)
+
+Home now shows only the selected welcome/avatar/game strip, favorite features and keybind reminders. The stats dashboard and Home quick-actions block were removed from the rendered layout; their underlying feature APIs remain available. Visible star buttons supplement the existing right-click pin gesture. Favorites retain stable saved keys. Boolean favorites use the same registered control setter; sliders, ranges, dropdowns and other complex favorites navigate to their original tab. Reminders read real keybind controls and refresh without rebuilding unchanged rows.
+
+A Home-only Yes/No popup offers to restore a saved previous session. No setter is called and no prior snapshot is overwritten before the answer. Yes restores matching control values, including false toggles, ranges, colors, keybinds and unbound keys; late controls apply once after registration completes. No keeps the current launch's settings. Session memory has a Settings toggle, checkpoints changed state every two seconds using the existing low-rate UI update, and flushes on normal unload. It is separate from named configs and favorites, isolated by game universe, and skips unavailable controls and failed initialization. The existing enum decoder now accepts its stored `Enum.KeyCode` namespace for correct keybind round-trips.
+
+Changed files: both library entry points, README, validation/report documents and the test runner/motion fixture. Added `tests/home-cases.luau` and `tests/session-cases.luau`. No artwork, palette, logo, sidebar structure, game feature implementation or source-repository file was replaced in this revision.
+
 ## Glass, theme and icon revision (v1.2)
 
 The user's chosen direction is clearly visible black-cat artwork behind glass panels. The global cream wash was reduced from 70% opacity to 4%, the artwork now retains 98% of its original opacity in Soft Kitty, and panels/rows use stable glass transparency rather than covering the illustration. The local layout simulation shows the cat, moon and bow through the Settings rows. This simulation verifies compositing choices, not Roblox rendering.
