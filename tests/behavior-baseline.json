@@ -1,6 +1,6 @@
 {
   "source": "test-ui-thing @ 59fe4d9",
-  "normalization": "Numeric background opacity, accent/main text color assignments, trailing whitespace and brand text only.",
+  "normalization": "Numeric background opacity, accent/main text color assignments, Back/Quint easing, trailing whitespace and brand text only.",
   "blocks": [
     {
       "name": "slider",
@@ -42,7 +42,7 @@
       "name": "tab adapter",
       "start": "local function __KZ_MakeSection(",
       "end": "-- Window controls",
-      "sha256": "6cc4e158d17e669fd65d334037e4aa8623af544187900786874243a58da34125"
+      "sha256": "a28dcddacc6799d611b1fb29c2ca4459ddf5e58ba4c899fdc0cca576f2df1c5d"
     }
   ]
 }

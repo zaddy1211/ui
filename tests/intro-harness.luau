@@ -72,6 +72,7 @@ end
 local function enqueue(thread, due) table.insert(queue, {Thread = thread, Due = due}) end
 local task = {}
 function task.spawn(fn) enqueue(coroutine.create(fn), now) end
+function task.defer(fn) task.spawn(fn) end
 function task.delay(delay, fn) enqueue(coroutine.create(fn), now + delay) end
 function task.wait(duration) return coroutine.yield(duration or .016) end
 local function advance(seconds)
@@ -92,7 +93,11 @@ local function advance(seconds)
 end
 local os = {clock = function() return now end}
 local UDim2 = {}
-function UDim2.new(xs, xo, ys, yo) return {X = {Scale = xs, Offset = xo}, Y = {Scale = ys, Offset = yo}} end
+function UDim2.new(xs, xo, ys, yo)
+    return setmetatable({X = {Scale = xs, Offset = xo}, Y = {Scale = ys, Offset = yo}}, {
+        __add = function(a,b) return UDim2.new(a.X.Scale+b.X.Scale,a.X.Offset+b.X.Offset,a.Y.Scale+b.Y.Scale,a.Y.Offset+b.Y.Offset) end,
+    })
+end
 function UDim2.fromOffset(x, y) return UDim2.new(0, x, 0, y) end
 function UDim2.fromScale(x, y) return UDim2.new(x, 0, y, 0) end
 local UDim = {new = function(s, o) return {Scale = s, Offset = o} end}
@@ -129,7 +134,8 @@ local function setup(theme, reduced, short, loadAnimation)
     local root = New("Root", {})
     Screen = New("ScreenGui", {Parent = root})
     Window = New("CanvasGroup", {Parent = Screen, Size = UDim2.fromOffset(900,540), ClipsDescendants = true,
-        Visible = false, Active = false, GroupTransparency = 1})
+        Visible = false, Active = false, GroupTransparency = 1,
+        AbsolutePosition = Vector2.new(50,60), AbsoluteSize = Vector2.new(720,432)})
     Scale = New("UIScale", {Parent = Window, Scale = .8})
     WindowFade = New("Frame", {Parent = Window, BackgroundColor3 = {Theme = theme}, ZIndex = 0})
     windowFadeGradient = New("UIGradient", {Parent = WindowFade, Color = "theme-gradient", Offset = Vector2.new(0,0), Rotation = 20})

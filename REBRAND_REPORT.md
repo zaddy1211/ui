@@ -1,5 +1,13 @@
 # Mochi Hub rebrand report
 
+## Motion and readability revision (v1.1)
+
+Responding to the user's screenshot, the framed square/circle compact logo was replaced by `assets/mochi-mark-v2.png`, a tightly framed transparent cat-and-bow silhouette. Sidebar and reopen masks/backplates were removed. The new launch is a standalone wordmark and thin status line; the main 900 × 540 window remains hidden until initialization reaches 100%, then expands from the wordmark while the cat mark settles into the sidebar. Talking text/bubbles and duplicate stickers are gone.
+
+Tabs now use short directional crossfades with stale-transition guards. Minimize/reopen callbacks have generation guards, and overlapping tweens cancel rather than fighting each other. Toggle tracks no longer swell or bounce; hover/press scaling is restrained. Native font weights replace the custom font download. Section hover no longer switches panels back to transparent, white highlights replace dark sheen, and background artwork is softer behind the controls.
+
+This revision adds motion and typography tests, updates launch cases to match the requested new sequence, and preserves configuration migration and the original control/adaptor implementation checks. The pre-revision tree is backed up at `backup/pre-motion-2026-11-15`. The original pre-rebrand backup remains intact.
+
 ## Repository boundaries
 
 - Read-only working source: https://github.com/zaddy1211/test-ui-thing at `59fe4d9f24bb0eb2011e03b117d553e815048e81`.
@@ -10,13 +18,13 @@
 
 ## Modified and added files
 
-- `UniversalUI.lua` and `universal ui`: same architecture and controls; Mochi branding, palettes, reference-derived logo/mascot, background, sprite icons, native body typography, soft surfaces/shadow, paw cursor, bounded animation updates, graceful image fallback, preference/config migration, and an additional `MochiAdapter` export.
+- `UniversalUI.lua` and `universal ui`: same architecture and controls; Mochi branding, palettes, reference-derived logo/cat mark, background, sprite icons, native typography, soft surfaces/shadow, paw cursor, logo-to-window opening, cancellation-safe animation, graceful image fallback, preference/config migration, and an additional `MochiAdapter` export.
 - `test`: working source game integration, with three plain-text diagnostic labels rebranded. Its obfuscated logic is preserved.
-- `assets/mochi-logo-v1.png`, `mochi-compact-v1.png`, `mochi-mascot-v1.png`, `mochi-dreamscape-v1.png`: imagegen assets based on the user's reference.
+- `assets/mochi-logo-v1.png`, `mochi-mark-v2.png`, `mochi-dreamscape-v1.png`: imagegen assets based on the user's reference.
 - `assets/mochi-icons-v1.png`, `mochi-paw-v1.png`: code-native outlined icon atlas and paw asset. A single atlas request covers the stock sidebar categories.
-- `assets/fonts/*`: original licensed Quick Love font and license retained for the brand heading. Controls use their clean native Gotham fonts.
+- Removed the unused v1 compact/mascot images and `assets/fonts/*` after replacing the downloaded font system with native typography.
 - `tools/render-mochi-icons.ps1`: editable deterministic icon renderer.
-- `tests/*`: inherited applicable lifecycle and input tests, new migration tests, API and source behavior baselines, and updated runner.
+- `tests/*`: revised launch lifecycle cases, inherited input tests, migration tests, new motion/typography cases, API/source behavior baselines, and updated runner.
 - `README.md`, `VALIDATION.md`, this report, and `assets/ARTWORK.md`: loading instructions, validation evidence/limits, removal inventory and artwork provenance.
 
 Legacy integration identifiers such as `KZAdapter`, `LyraZen`, configuration keys and compatibility option names remain where required by existing callers. Legacy file paths are used only for read-only migration. None are visible product branding. The new `__MOCHI_UI_OPTIONS` input is preferred; the old option input remains accepted.
